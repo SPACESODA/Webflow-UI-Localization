@@ -3,7 +3,7 @@
 
 ![Powered by Extension.js][powered-image]
 
-# TypeScript Sidebar Example
+# Webflow UI Localization
 
 > Type-safe extension with a sidebar panel.
 
