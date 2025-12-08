@@ -5,9 +5,15 @@
 
 # Webflow UI Localization
 
-> Type-safe extension with a sidebar panel.
+> Translate the Webflow dashboard UI into Japanese or Traditional Chinese.
 
-Type-first foundation for content and background logic. Fast builds and accurate previews—no boilerplate required.
+The extension swaps common UI strings on these Webflow surfaces:
+
+- `https://webflow.com/dashboard*`
+- `https://preview.webflow.com*`
+- `https://*.design.webflow.com*`
+
+Open the extension’s Options page (click the extension icon) to choose between Japanese and Traditional Chinese or turn translations off to stay in English. Click the toolbar icon any time to toggle translations (badge shows OFF when disabled). Your choice is saved and applied automatically on matching Webflow pages.
 
 ## Installation
 

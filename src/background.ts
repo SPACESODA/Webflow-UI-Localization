@@ -1,42 +1,39 @@
-console.log('Hello from the background script')
+const DEFAULT_SETTINGS = {enabled: true}
 
-const isFirefoxLike =
-  import.meta.env.EXTENSION_PUBLIC_BROWSER === 'firefox' ||
-  import.meta.env.EXTENSION_PUBLIC_BROWSER === 'gecko-based'
+function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStorageArea {
+  if (chrome?.storage?.sync) return chrome.storage.sync
+  return chrome.storage.local
+}
 
-if (isFirefoxLike) {
-  browser.browserAction.onClicked.addListener(() => {
-    browser.sidebarAction.open()
-  })
+function setBadge(enabled: boolean) {
+  chrome.action.setBadgeText({text: enabled ? '' : 'OFF'})
+  chrome.action.setBadgeBackgroundColor({color: '#ef4444'})
+}
 
-  browser.runtime.onMessage.addListener((message: any) => {
-    if (!message || message.type !== 'openSidebar') return
-
-    browser.sidebarAction.open()
+function refreshBadge() {
+  const storage = getStorage()
+  storage.get(DEFAULT_SETTINGS, (result) => {
+    const enabled = typeof result.enabled === 'boolean' ? result.enabled : true
+    setBadge(enabled)
   })
 }
 
-if (!isFirefoxLike) {
-  chrome.action.onClicked.addListener(() => {
-    chrome.sidePanel.setPanelBehavior({openPanelOnActionClick: true})
+function toggleEnabled() {
+  const storage = getStorage()
+  storage.get(DEFAULT_SETTINGS, (result) => {
+    const next = !(typeof result.enabled === 'boolean' ? result.enabled : true)
+    storage.set({enabled: next}, () => setBadge(next))
   })
 }
 
-chrome.runtime.onMessage.addListener((message) => {
-  if (!message || message.type !== 'openSidebar') return
+chrome.action.onClicked.addListener(() => {
+  toggleEnabled()
+})
 
-  chrome.sidePanel.setPanelBehavior({openPanelOnActionClick: true})
+chrome.runtime.onInstalled.addListener(() => {
+  refreshBadge()
+})
 
-  if (!chrome.sidePanel.open) return
-
-  chrome.tabs.query({active: true, currentWindow: true}, (tabs) => {
-    const activeTabId = tabs && tabs[0] && tabs[0].id
-    if (!activeTabId) return
-
-    try {
-      chrome.sidePanel.open({tabId: activeTabId})
-    } catch (error) {
-      console.error(error)
-    }
-  })
+chrome.runtime.onStartup.addListener(() => {
+  refreshBadge()
 })
