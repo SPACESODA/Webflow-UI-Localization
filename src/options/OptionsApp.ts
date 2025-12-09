@@ -216,11 +216,16 @@ export default function initOptionsPage() {
   repoLink.target = '_blank'
   repoLink.rel = 'noreferrer'
   repoLink.textContent = 'View the GitHub repo'
+  const disclaimer = document.createElement('p')
+  disclaimer.className = 'disclaimer'
+  disclaimer.textContent =
+    'This extension is an independent project and is not affiliated with or endorsed by Webflow. Webflow is a trademark of Webflow, Inc.'
 
   hydrateSelection(form, enabledToggle, strictToggle, status)
   footer.appendChild(divider)
   footer.appendChild(credit)
   footer.appendChild(repoLink)
+  footer.appendChild(disclaimer)
   container.appendChild(footer)
 }
 
