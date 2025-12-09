@@ -37,3 +37,10 @@ chrome.runtime.onInstalled.addListener(() => {
 chrome.runtime.onStartup.addListener(() => {
   refreshBadge()
 })
+
+chrome.storage.onChanged.addListener((changes, areaName) => {
+  if (areaName !== 'sync' && areaName !== 'local') return
+  if (typeof changes.enabled?.newValue === 'boolean') {
+    setBadge(Boolean(changes.enabled.newValue))
+  }
+})

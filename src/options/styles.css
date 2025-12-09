@@ -133,6 +133,7 @@ body {
 form {
   display: grid;
   gap: 12px;
+  margin: 0 0 12px;
 }
 
 .language_option {
@@ -176,8 +177,12 @@ form[data-disabled='true'] .language_option {
 }
 
 .status {
-  margin: 16px 0 0;
+  margin: 12px 0 12px;
   color: #475569;
+}
+
+.toggle + form {
+  margin-top: 8px;
 }
 
 .status[data-status='changed'] {

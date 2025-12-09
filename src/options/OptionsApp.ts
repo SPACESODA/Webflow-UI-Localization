@@ -76,22 +76,16 @@ function renderLanguages(root: HTMLElement) {
     form.appendChild(wrapper)
   })
 
-  const status = document.createElement('p')
-  status.className = 'status'
-  status.setAttribute('data-status', 'idle')
-  status.textContent = 'Choose the language you want to see in Webflow.'
-
   root.appendChild(form)
-  root.appendChild(status)
 
-  return {form, status}
+  return form
 }
 
 function setStatus(element: HTMLElement, message: string) {
   element.textContent = message
   element.dataset.status = 'changed'
   setTimeout(() => {
-    element.textContent = 'Choose the language you want to see in Webflow.'
+    element.textContent = 'Choose the language you want to see in Webflow. More languages coming soon!'
     element.dataset.status = 'idle'
   }, 2000)
 }
@@ -177,15 +171,15 @@ export default function initOptionsPage() {
     <div class="options_shell">
       <div>
         <p class="eyebrow">Webflow UI Localization</p>
-        <h1 class="title">Choose your language</h1>
+        <h1 class="title">Choose your Webflow UI language</h1>
         <p class="lede">
-          This extension translates the UI of Webflow&rsquo;s Dashboard and Designer. It may not translate every term; the goal is to make Webflow easier to use without distorting its terminology.
+          This extension translates the UI of Webflow&rsquo;s Dashboard and Designer. The goal is to make Webflow easier to use without distorting its terminology. It may not translate every term.
         </p>
         <p class="lede translation">
-          この拡張機能は Webflow のダッシュボードとデザイナーの UI を翻訳します。用語を歪めないようにするため、すべての文言は訳されない場合があります。
+          この拡張機能は Webflow の ダッシュボード と Designer の UI を翻訳します。用語を歪めないようにするため、すべての文言は訳されない場合があります。
         </p>
         <p class="lede translation">
-          此擴充功能會翻譯 Webflow 的儀表板與 Designer 介面。為了避免混淆 Webflow 的術語，可能不會翻譯所有文字。
+          此擴充功能會翻譯 Webflow 的 Dashboard 與 Designer 介面。為了避免混淆 Webflow 的術語，可能不會翻譯所有文字。
         </p>
       </div>
     </div>
@@ -196,13 +190,20 @@ export default function initOptionsPage() {
   root.querySelector('.options_shell')?.appendChild(container)
 
   const enabledToggle = renderToggle(container)
+
+  const status = document.createElement('p')
+  status.className = 'status'
+  status.setAttribute('data-status', 'idle')
+  status.textContent = 'Choose the language you want to see in Webflow. More languages later!'
+  container.appendChild(status)
+
+  const form = renderLanguages(container)
   const strictToggle = renderToggle(container, {
     name: 'strictMatching',
-    title: 'Avoid partial translations',
+    title: 'Avoid partial translations (Recommended)',
     description:
       'Only translate when the full text matches the dictionary entry. Prevents partial phrase changes.'
   })
-  const {form, status} = renderLanguages(container)
   const footer = document.createElement('div')
   footer.className = 'footer'
   const divider = document.createElement('div')
@@ -215,7 +216,7 @@ export default function initOptionsPage() {
   repoLink.href = 'https://github.com/SPACESODA/Webflow-UI-Localization'
   repoLink.target = '_blank'
   repoLink.rel = 'noreferrer'
-  repoLink.textContent = 'View the GitHub repo'
+  repoLink.textContent = 'Contribute on GitHub'
   const disclaimer = document.createElement('p')
   disclaimer.className = 'disclaimer'
   disclaimer.textContent =
