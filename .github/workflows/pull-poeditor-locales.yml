@@ -25,7 +25,7 @@ jobs:
         run: npm install
 
       - name: Pull locales from POEditor
-        run: node scripts/pull-poeditor.mjs
+        run: node .github/scripts/pull-poeditor.mjs
         env:
           POEDITOR_API_TOKEN: ${{ secrets.POEDITOR_API_TOKEN }}
           POEDITOR_PROJECT_ID: ${{ secrets.POEDITOR_PROJECT_ID }}

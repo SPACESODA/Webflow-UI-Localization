@@ -12,9 +12,9 @@ if (!token || !projectId) {
 
 const languageEntries = (languagesEnv || 'ja=src/locales/ja.json,zh-TW=src/locales/zh-TW.json')
   .split(',')
-  .map(entry => entry.trim())
+  .map((entry) => entry.trim())
   .filter(Boolean)
-  .map(entry => {
+  .map((entry) => {
     const [code, filePath] = entry.split('=');
     if (!code || !filePath) {
       throw new Error(`Invalid language entry "${entry}". Use "code=path" format.`);
@@ -67,7 +67,7 @@ async function run() {
   console.log('Locales updated from POEditor.');
 }
 
-run().catch(err => {
+run().catch((err) => {
   console.error(err);
   process.exit(1);
 });
