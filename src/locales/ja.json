@@ -2,5 +2,60 @@
   "Dashboard": "ダッシュボード",
   "Client management": "クライアント管理",
   "Learn more": "詳細はこちら",
-  "No element selected": "要素が選択されていません"
+  "No element selected": "要素が選択されていません",
+
+  "All sites": "すべてのサイト",
+  "Settings": "設定",
+  "General": "一般設定",
+  "Team": "チーム",
+  "Plans": "プラン",
+  "Billing": "請求",
+  "Apps & Integrations": "アプリと統合",
+  "Develop": "開発",
+  "Manage": "管理",
+  "Libraries & Templates": "ライブラリとテンプレート",
+  "Shared": "共有",
+  "Marketplace": "マーケットプレイス",
+
+  "Search sites": "サイトを検索",
+  "Date created": "作成日",
+  "Invite": "招待",
+  "New Sites": "新規サイト",
+  "Clients": "クライアント",
+  "Guests": "ゲスト",
+  "Legacy guest access": "レガシーゲストアクセス",
+
+  "We’ve updated guest access so your whole team can more easily access your client’s workspace. To take advantage of the new functionality, convert your current, individual guest access into access for your workspace instead. While the updated access is pending, your current legacy guest access will remain in place.": "チーム全体がクライアントの Workspace にアクセスしやすくなるよう、ゲストアクセスを更新しました。新機能を利用するには、現在の個別ゲストアクセスを Workspace 全体のアクセスに変換してください。更新処理中も、既存のレガシーゲストアクセスは引き続き有効です。",
+
+  "Client": "クライアント",
+  "Update access": "アクセスを更新",
+  "Error": "エラー",
+  "Something went wrong. Please try again": "問題が発生しました。もう一度お試しください。",
+
+  "Workspace name": "Workspace 名",
+  "Guest display name": "ゲスト表示名",
+  "This name appears when you join a Workspace as a guest. You cannot remove it if you are an active guest.": "ゲストとして Workspace に参加する際、この名前が表示されます。アクティブなゲストの場合は削除できません。",
+
+  "Upload": "アップロード",
+  "You can upload images up to 256x256.": "256×256 までの画像をアップロードできます。",
+  "Default Workspace": "デフォルト Workspace",
+  "Display this Workspace after logging in": "ログイン後にこの Workspace を表示",
+
+  "Webflow AI": "Webflow AI",
+  "Add Webflow AI to this Workspace": "Webflow AI をこの Workspace に追加",
+
+  "Site access settings": "サイトアクセス設定",
+  "Each site has an access setting that determines who can view it.": "各サイトには、閲覧可能なユーザーを決定するアクセス設定があります。",
+  "Learn more about site access.": "サイトアクセスについて詳しくはこちら。",
+
+  "Default site access": "デフォルトのサイトアクセス",
+  "Only admins and people added can view": "管理者と追加されたユーザーのみ閲覧可能",
+  "Overview": "概要",
+
+  "Site visibility": "サイトの公開範囲",
+  "Sites": "サイト",
+  "Everyone in the Workspace can view": "Workspace 内のすべてのユーザーが閲覧可能",
+
+  "Update all sites": "すべてのサイトを更新",
+  "Archive Workspace": "Workspace をアーカイブ"
 }

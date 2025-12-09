@@ -2,5 +2,60 @@
   "Dashboard": "儀表板",
   "Client management": "客戶管理",
   "Learn more": "了解更多",
-  "No element selected": "未選取任何元素"
+  "No element selected": "未選取任何元素",
+
+  "All sites": "所有網站",
+  "Settings": "設定",
+  "General": "一般設定",
+  "Team": "團隊",
+  "Plans": "方案",
+  "Billing": "帳單",
+  "Apps & Integrations": "應用程式與整合",
+  "Develop": "開發",
+  "Manage": "管理",
+  "Libraries & Templates": "元件庫與範本",
+  "Shared": "共用",
+  "Marketplace": "市集",
+
+  "Search sites": "搜尋網站",
+  "Date created": "建立日期",
+  "Invite": "邀請",
+  "New Sites": "新增網站",
+  "Clients": "客戶",
+  "Guests": "來賓",
+  "Legacy guest access": "舊版來賓存取權限",
+
+  "We’ve updated guest access so your whole team can more easily access your client’s workspace. To take advantage of the new functionality, convert your current, individual guest access into access for your workspace instead. While the updated access is pending, your current legacy guest access will remain in place.": "我們已更新來賓存取功能，讓你的整個團隊能更輕鬆地存取客戶的 Workspace。若要使用新功能，請將你目前的個別來賓權限轉換為 Workspace 層級的存取。在更新處理期間，你的舊版來賓權限仍會維持有效。",
+
+  "Client": "客戶",
+  "Update access": "更新存取",
+  "Error": "錯誤",
+  "Something went wrong. Please try again": "發生問題，請再試一次",
+
+  "Workspace name": "Workspace 名稱",
+  "Guest display name": "來賓顯示名稱",
+  "This name appears when you join a Workspace as a guest. You cannot remove it if you are an active guest.": "當你以來賓身分加入 Workspace 時，將顯示此名稱。若你目前為有效來賓，則無法移除。",
+
+  "Upload": "上傳",
+  "You can upload images up to 256x256.": "你可以上傳最大 256x256 的圖片。",
+  "Default Workspace": "預設 Workspace",
+  "Display this Workspace after logging in": "登入後顯示此 Workspace",
+
+  "Webflow AI": "Webflow AI",
+  "Add Webflow AI to this Workspace": "將 Webflow AI 加入此 Workspace",
+
+  "Site access settings": "網站存取設定",
+  "Each site has an access setting that determines who can view it.": "每個網站都有存取設定，用於決定誰可以檢視。",
+  "Learn more about site access.": "了解更多網站存取方式。",
+
+  "Default site access": "預設網站存取設定",
+  "Only admins and people added can view": "僅管理員與被加入的人可檢視",
+  "Overview": "概覽",
+
+  "Site visibility": "網站可見性",
+  "Sites": "網站",
+  "Everyone in the Workspace can view": "Workspace 中所有人可檢視",
+
+  "Update all sites": "更新所有網站",
+  "Archive Workspace": "封存 Workspace"
 }
