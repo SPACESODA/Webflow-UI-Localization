@@ -13,10 +13,25 @@ The extension swaps UI strings on these Webflow surfaces:
 
 Open the extension’s Options page (click the extension icon) to choose your language or turn translations off to stay in English. You can also click the toolbar extension icon to toggle translations (badge shows OFF when disabled).
 
+### Contribute translations
+
+Join the community translation project on POEditor 🦜
+
+It's easy to contribute!  
+https://poeditor.com/join/project/7drFUDh3dh
+
+Latest locale JSONs via jsDelivr:  
+https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization
+
 <br />
 
 Made with &hearts; by [Anthony C.](https://x.com/anthonycxc)
 
+<br />
+
+---
+
+<br />
 <br />
 
 ![Powered by Extension.js][powered-image]

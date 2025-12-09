@@ -13,9 +13,15 @@ type Replacement = {
 
 type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean }
 
-const SUPPORTED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
+const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ja,
   'zh-TW': zhTw
+}
+
+const REMOTE_LOCALE_URLS: Partial<Record<Exclude<LanguageCode, 'off'>, string>> = {
+  ja: 'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ja.json',
+  'zh-TW':
+    'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-TW.json'
 }
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
@@ -39,6 +45,8 @@ let reverseReplacements: Replacement[] = []
 let currentLanguage: Exclude<LanguageCode, 'off'> = DEFAULT_LANGUAGE
 let isEnabled = true
 let strictMatching = true
+let latestSettings: Settings = DEFAULT_SETTINGS
+let loadedLanguages: Record<Exclude<LanguageCode, 'off'>, Dictionary> = { ...BUNDLED_LANGUAGES }
 let observer: MutationObserver | null = null
 let flushScheduled = false
 const pendingTextNodes = new Set<Text>()
@@ -259,9 +267,48 @@ function getSavedSettings(): Promise<Settings> {
   })
 }
 
+async function fetchLocale(url: string): Promise<Dictionary> {
+  const response = await fetch(url, { cache: 'no-cache' })
+  if (!response.ok) {
+    throw new Error(`Failed to fetch locale: ${response.status}`)
+  }
+
+  const data = await response.json()
+  if (!data || typeof data !== 'object') {
+    throw new Error('Invalid locale JSON')
+  }
+  return data as Dictionary
+}
+
+async function refreshLocalesFromCdn() {
+  const updates: Partial<Record<Exclude<LanguageCode, 'off'>, Dictionary>> = {}
+  const entries = Object.entries(REMOTE_LOCALE_URLS) as [Exclude<LanguageCode, 'off'>, string][]
+
+  await Promise.all(
+    entries.map(async ([code, url]) => {
+      try {
+        const locale = await fetchLocale(url)
+        updates[code] = locale
+      } catch (err) {
+        console.warn(`Could not refresh locale for ${code}`, err)
+      }
+    })
+  )
+
+  if (Object.keys(updates).length) {
+    loadedLanguages = { ...loadedLanguages, ...updates }
+    applySettings(latestSettings)
+  }
+}
+
 function applySettings(settings: Settings) {
+  latestSettings = settings
   const language = settings.language === 'off' ? currentLanguage : settings.language
-  const dictionary = SUPPORTED_LANGUAGES[language] ?? SUPPORTED_LANGUAGES[DEFAULT_LANGUAGE]
+  const dictionary =
+    loadedLanguages[language] ??
+    BUNDLED_LANGUAGES[language] ??
+    loadedLanguages[DEFAULT_LANGUAGE] ??
+    BUNDLED_LANGUAGES[DEFAULT_LANGUAGE]
 
   currentLanguage = language
   isEnabled = settings.enabled && settings.language !== 'off'
@@ -302,10 +349,16 @@ function listenForSettingsChanges() {
 
 function init() {
   if (!document.body) return
-  getSavedSettings().then((settings) => {
-    applySettings(settings)
-    listenForSettingsChanges()
-  })
+  getSavedSettings()
+    .then((settings) => {
+      applySettings(settings)
+      listenForSettingsChanges()
+      refreshLocalesFromCdn()
+    })
+    .catch((err) => {
+      console.warn('Failed to load saved settings', err)
+      refreshLocalesFromCdn()
+    })
 }
 
 if (document.readyState === 'loading') {

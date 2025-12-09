@@ -52,3 +52,15 @@ jobs:
       - name: Push changes
         if: steps.commit.outputs.changes == 'true'
         run: git push
+
+      - name: Purge jsDelivr cache
+        if: steps.commit.outputs.changes == 'true'
+        run: |
+          urls=(
+            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/ja.json"
+            "https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/zh-TW.json"
+          )
+          for url in "${urls[@]}"; do
+            echo "Purging $url"
+            curl -fsS "$url"
+          done

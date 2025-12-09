@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/chrome-manifest.json",
   "manifest_version": 3,
-  "version": "0.0.9",
+  "version": "0.1.1",
   "name": "Webflow UI Localization",
   "description": "Swap Webflow dashboard UI text for Japanese or Traditional Chinese translations.",
   "icons": {
@@ -26,6 +26,9 @@
   },
   "permissions": [
     "storage"
+  ],
+  "host_permissions": [
+    "https://cdn.jsdelivr.net/*"
   ],
   "content_scripts": [
     {
