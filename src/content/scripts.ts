@@ -7,11 +7,11 @@ type Dictionary = Record<string, string>
 
 type Replacement = {
   regex: RegExp
-  replacement: string | ((substring: string, ...args: unknown[]) => string)
+  replacement: string | ((substring: string, ...args: any[]) => string)
   marker?: string
 }
 
-type Settings = {language: LanguageCode; enabled: boolean; strictMatching: boolean}
+type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean }
 
 const SUPPORTED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ja,
@@ -19,7 +19,7 @@ const SUPPORTED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
 }
 
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
-const DEFAULT_SETTINGS: Settings = {language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true}
+const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true }
 
 const SKIP_TAGS = new Set([
   'SCRIPT',
@@ -93,9 +93,9 @@ function translateTextNode(node: Text) {
   let changed = false
 
   for (let i = 0; i < activeReplacements.length; i += 1) {
-    const {regex, replacement, marker} = activeReplacements[i]
+    const { regex, replacement, marker } = activeReplacements[i]
     if (!maybeContains(updated, marker)) continue
-    const next = updated.replace(regex, replacement)
+    const next = updated.replace(regex, replacement as any)
     if (next !== updated) {
       updated = next
       changed = true
@@ -115,9 +115,9 @@ function revertTextNode(node: Text) {
   let changed = false
 
   for (let i = 0; i < reverseReplacements.length; i += 1) {
-    const {regex, replacement, marker} = reverseReplacements[i]
+    const { regex, replacement, marker } = reverseReplacements[i]
     if (!maybeContains(updated, marker)) continue
-    const next = updated.replace(regex, replacement)
+    const next = updated.replace(regex, replacement as any)
     if (next !== updated) {
       updated = next
       changed = true
@@ -141,7 +141,7 @@ function shouldSkipTextNode(textNode: Text) {
 function translateWithin(root: Node) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(textNode) {
-      return shouldSkipTextNode(textNode) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+      return shouldSkipTextNode(textNode as Text) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
     }
   })
 
@@ -155,7 +155,7 @@ function translateWithin(root: Node) {
 function revertWithin(root: Node) {
   const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
     acceptNode(textNode) {
-      return shouldSkipTextNode(textNode) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
+      return shouldSkipTextNode(textNode as Text) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT
     }
   })
 
@@ -192,7 +192,7 @@ function scheduleFlush() {
 
   if ('requestIdleCallback' in window) {
     // @ts-ignore
-    window.requestIdleCallback(runner, {timeout: 100})
+    window.requestIdleCallback(runner, { timeout: 100 })
   } else {
     setTimeout(runner, 16)
   }
@@ -254,7 +254,7 @@ function getSavedSettings(): Promise<Settings> {
         typeof result.strictMatching === 'boolean'
           ? result.strictMatching
           : DEFAULT_SETTINGS.strictMatching
-      resolve({language, enabled, strictMatching: strict})
+      resolve({ language, enabled, strictMatching: strict })
     })
   })
 }
@@ -296,7 +296,7 @@ function listenForSettingsChanges() {
         ? changes.strictMatching.newValue
         : strictMatching
 
-    applySettings({language, enabled, strictMatching: strict})
+    applySettings({ language, enabled, strictMatching: strict })
   })
 }
 

@@ -1,14 +1,14 @@
 type LanguageCode = 'ja' | 'zh-TW'
 
-type Settings = {language: LanguageCode; enabled: boolean; strictMatching: boolean}
+type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean }
 
 const DEFAULT_LANGUAGE: LanguageCode = 'ja'
-const DEFAULT_SETTINGS: Settings = {language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true}
+const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true }
 
-const languages: Array<{value: LanguageCode; label: string; nativeLabel: string}> =
+const languages: Array<{ value: LanguageCode; label: string; nativeLabel: string }> =
   [
-    {value: 'ja', label: 'Japanese', nativeLabel: '日本語'},
-    {value: 'zh-TW', label: 'Traditional Chinese', nativeLabel: '繁體中文'}
+    { value: 'ja', label: 'Japanese', nativeLabel: '日本語' },
+    { value: 'zh-TW', label: 'Traditional Chinese', nativeLabel: '繁體中文' }
   ]
 
 function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStorageArea {
@@ -18,7 +18,7 @@ function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStor
 
 function renderToggle(
   root: HTMLElement,
-  options: {name?: string; title?: string; description?: string} = {}
+  options: { name?: string; title?: string; description?: string } = {}
 ) {
   const toggle = document.createElement('label')
   toggle.className = 'toggle'
@@ -35,9 +35,8 @@ function renderToggle(
 
   const text = document.createElement('div')
   text.className = 'toggle_text'
-  text.innerHTML = `<strong>${options.title ?? 'Enable translation'}</strong><span>${
-    options.description ?? 'Turn this off to keep Webflow in English.'
-  }</span>`
+  text.innerHTML = `<strong>${options.title ?? 'Enable translation'}</strong><span>${options.description ?? 'Turn this off to keep Webflow in English.'
+    }</span>`
 
   track.appendChild(thumb)
   toggle.appendChild(checkbox)
@@ -131,7 +130,7 @@ function hydrateSelection(
       const target = event.target as HTMLInputElement
       const nextEnabled = Boolean(target.checked)
       toggleLanguageDisabled(form, !nextEnabled)
-      storage.set({enabled: nextEnabled}, () =>
+      storage.set({ enabled: nextEnabled }, () =>
         setStatus(status, nextEnabled ? 'Translation enabled' : 'Translation turned off')
       )
     })
@@ -139,7 +138,7 @@ function hydrateSelection(
     strictToggle.addEventListener('change', (event) => {
       const target = event.target as HTMLInputElement
       const nextStrict = Boolean(target.checked)
-      storage.set({strictMatching: nextStrict}, () =>
+      storage.set({ strictMatching: nextStrict }, () =>
         setStatus(
           status,
           nextStrict
@@ -154,7 +153,7 @@ function hydrateSelection(
       if (!target || target.name !== 'language') return
 
       const nextLanguage = target.value as LanguageCode
-      storage.set({language: nextLanguage, enabled: true}, () =>
+      storage.set({ language: nextLanguage, enabled: true }, () =>
         setStatus(status, 'Saved')
       )
       enabledToggle.checked = true
@@ -208,15 +207,24 @@ export default function initOptionsPage() {
   footer.className = 'footer'
   const divider = document.createElement('div')
   divider.className = 'footer_divider'
+
+  const meta = document.createElement('div')
+  meta.className = 'footer_meta'
+
   const credit = document.createElement('p')
   credit.className = 'credit'
-  credit.innerHTML = `Created with love by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer">Anthony C.</a>`
+  credit.innerHTML = `Made with &hearts; by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer">Anthony C.</a>`
+
   const repoLink = document.createElement('a')
   repoLink.className = 'repo_link'
   repoLink.href = 'https://github.com/SPACESODA/Webflow-UI-Localization'
   repoLink.target = '_blank'
   repoLink.rel = 'noreferrer'
   repoLink.textContent = 'Contribute on GitHub'
+
+  meta.appendChild(credit)
+  meta.appendChild(repoLink)
+
   const disclaimer = document.createElement('p')
   disclaimer.className = 'disclaimer'
   disclaimer.textContent =
@@ -224,8 +232,7 @@ export default function initOptionsPage() {
 
   hydrateSelection(form, enabledToggle, strictToggle, status)
   footer.appendChild(divider)
-  footer.appendChild(credit)
-  footer.appendChild(repoLink)
+  footer.appendChild(meta)
   footer.appendChild(disclaimer)
   container.appendChild(footer)
 }
