@@ -10,6 +10,6 @@
     "options_strict_label": "避免部分翻译 (推荐)",
     "options_strict_desc": "仅在完全匹配翻译词条时才进行翻译，防止句子被部分修改。",
     "options_cdn_label": "使用最新翻译",
-    "options_cdn_desc": "从 CDN 获取最新的社区翻译。关闭以仅使用内置版本。",
+    "options_cdn_desc": "从 CDN 获取最新的社区翻译。关闭以仅使用内置语言包。",
     "options_contribute": "去 GitHub 抓虫"
 }

@@ -44,10 +44,12 @@ function testMatch(label: string, source: string, input: string) {
     const match = input.match(regex);
     console.log(`Matched? ${!!match}  (Input: "${input.replace(/\n/g, '\\n').replace(/\u00A0/g, '&nbsp;')}")`);
     if (match) {
-        const captured = tokenNames.reduce<Record<string, string>>((acc, name, idx) => {
-            acc[name || `token${idx + 1}`] = match[idx + 2]; // skip leading whitespace group
-            return acc;
-        }, {});
+        const captured: Record<string, string[]> = {};
+        tokenNames.forEach((name, idx) => {
+            const key = name || `token${idx + 1}`;
+            if (!captured[key]) captured[key] = [];
+            captured[key].push(match[idx + 2]); // skip leading whitespace
+        });
         console.log('Captured tokens:', captured);
     }
 }
@@ -67,5 +69,6 @@ testMatch("Case 3: Inter-word Newline", "under Made in Webflow.", "under\nMade i
 // Case 4: Word boundary / punctuation
 testMatch("Case 4: Punctuation", "Made in Webflow.", "Made in Webflow"); // Mismatch expected (missing dot)
 testMatch("Case 4: Trailing s", "handle", "handles"); // Expected mismatch? 
-// Regex for "handle": ^(\s*)handle(\s*)$
+// Regex for "handle": ^(\s*)handle(\s*)$// Case 5: Fuzzy Matching {*}
+testMatch("Case 5: Multiple {*}", "Hello {*}, welcome to {*}", "Hello John, welcome to Webflow");
 // "handles" -> matches "handle"? No. "handle" is literal. s makes it fail. Correct.
