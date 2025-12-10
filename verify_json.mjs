@@ -20,6 +20,157 @@ const files = [
 
 let hasError = false;
 
+/**
+ * Lightweight JSON parser to detect duplicate keys per object while still
+ * validating that the JSON is well‑formed. Avoids false positives from
+ * sibling objects using the same property names.
+ */
+function verifyJsonStructure(source) {
+    let index = 0;
+    const duplicates = [];
+
+    const numberRegex = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
+
+    function error(message) {
+        throw new Error(`${message} at position ${index}`);
+    }
+
+    function currentChar() {
+        return source[index];
+    }
+
+    function advance(step = 1) {
+        index += step;
+    }
+
+    function skipWhitespace() {
+        while (/\s/.test(currentChar())) advance();
+    }
+
+    function parseString() {
+        if (currentChar() !== '"') error('Expected string');
+        const start = index;
+        advance(); // skip opening quote
+        while (index < source.length) {
+            const ch = currentChar();
+            if (ch === '\\') {
+                advance(2); // skip escaped char
+                continue;
+            }
+            if (ch === '"') {
+                const raw = source.slice(start, index + 1);
+                try {
+                    // Use JSON.parse to properly unescape
+                    JSON.parse(raw);
+                } catch {
+                    error('Invalid string escape sequence');
+                }
+                advance(); // closing quote
+                return raw;
+            }
+            advance();
+        }
+        error('Unterminated string');
+    }
+
+    function parseNumber() {
+        const remaining = source.slice(index);
+        const match = remaining.match(numberRegex);
+        if (!match) error('Invalid number');
+        advance(match[0].length);
+    }
+
+    function parseLiteral(expected) {
+        if (source.slice(index, index + expected.length) !== expected) {
+            error(`Expected ${expected}`);
+        }
+        advance(expected.length);
+    }
+
+    function parseArray() {
+        advance(); // skip [
+        skipWhitespace();
+        if (currentChar() === ']') {
+            advance();
+            return;
+        }
+        while (true) {
+            parseValue();
+            skipWhitespace();
+            const ch = currentChar();
+            if (ch === ',') {
+                advance();
+                skipWhitespace();
+                continue;
+            }
+            if (ch === ']') {
+                advance();
+                return;
+            }
+            error('Expected , or ] in array');
+        }
+    }
+
+    function parseObject() {
+        advance(); // skip {
+        skipWhitespace();
+        const seenKeys = new Set();
+        if (currentChar() === '}') {
+            advance();
+            return;
+        }
+        while (true) {
+            skipWhitespace();
+            const keyStart = index;
+            const rawKey = parseString();
+            const key = JSON.parse(rawKey);
+            skipWhitespace();
+            if (currentChar() !== ':') error('Expected : after key');
+            advance();
+            skipWhitespace();
+            if (seenKeys.has(key)) {
+                duplicates.push(key);
+            } else {
+                seenKeys.add(key);
+            }
+            parseValue();
+            skipWhitespace();
+            const ch = currentChar();
+            if (ch === ',') {
+                advance();
+                skipWhitespace();
+                continue;
+            }
+            if (ch === '}') {
+                advance();
+                return;
+            }
+            error('Expected , or } in object');
+        }
+    }
+
+    function parseValue() {
+        skipWhitespace();
+        const ch = currentChar();
+        if (ch === '"') return parseString();
+        if (ch === '{') return parseObject();
+        if (ch === '[') return parseArray();
+        if (ch === '-' || (ch >= '0' && ch <= '9')) return parseNumber();
+        if (ch === 't') return parseLiteral('true');
+        if (ch === 'f') return parseLiteral('false');
+        if (ch === 'n') return parseLiteral('null');
+        error('Unexpected character');
+    }
+
+    parseValue();
+    skipWhitespace();
+    if (index !== source.length) {
+        error('Unexpected trailing content');
+    }
+
+    return duplicates;
+}
+
 files.forEach(file => {
     const filePath = path.resolve(process.cwd(), file);
     console.log(`Checking ${file}...`);
@@ -27,33 +178,14 @@ files.forEach(file => {
     try {
         const content = fs.readFileSync(filePath, 'utf8');
 
-        // 1. Check for Duplicate Keys (Raw check)
-        const keyRegex = /"([^"]+)"\s*:/g;
-        const keys = [];
-        let match;
-        while ((match = keyRegex.exec(content)) !== null) {
-            keys.push(match[1]);
-        }
-
-        const uniqueKeys = new Set();
-        const duplicates = [];
-        keys.forEach(key => {
-            if (uniqueKeys.has(key)) {
-                duplicates.push(key);
-            } else {
-                uniqueKeys.add(key);
-            }
-        });
-
+        // Validate structure and detect duplicates per object
+        const duplicates = verifyJsonStructure(content);
         if (duplicates.length > 0) {
-            console.error(`❌ Found duplicate keys in ${file}:`, duplicates);
+            console.error(`❌ Found duplicate keys in ${file}:`, [...new Set(duplicates)]);
             hasError = true;
         } else {
             console.log(`✅ No duplicate keys found in ${file}.`);
         }
-
-        // 2. Check JSON Validity
-        JSON.parse(content);
         console.log(`✅ Valid JSON format: ${file}`);
 
     } catch (err) {

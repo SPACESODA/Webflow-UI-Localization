@@ -45,6 +45,10 @@ const SKIP_TAGS = new Set([
   'BUTTON'
 ])
 
+import { EXCLUDED_SELECTORS } from './exclusions'
+
+const IGNORE_PATTERN = EXCLUDED_SELECTORS.join(',')
+
 let activeReplacements: Replacement[] = []
 let reverseReplacements: Replacement[] = []
 let currentLanguage: Exclude<LanguageCode, 'off'> = DEFAULT_LANGUAGE
@@ -270,6 +274,7 @@ function shouldSkipTextNode(textNode: Text) {
   if (!parent) return true
   if (SKIP_TAGS.has(parent.tagName)) return true
   if (parent.isContentEditable) return true
+  if (IGNORE_PATTERN && parent.closest(IGNORE_PATTERN)) return true
   if (!textNode.textContent?.trim()) return true
   return false
 }

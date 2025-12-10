@@ -16,33 +16,40 @@ function buildFlexiblePattern(value: string): string {
 
 function buildTokenizedReplacement(
     sourceString: string,
-    targetString: string,
     flexible: boolean
 ) {
-    const tokenRegex = /\{[^}]+\}/g
-    // const sourceTokens: string[] = sourceString.match(tokenRegex) || []
-    const parts = sourceString.split(tokenRegex)
+    // Split keeps placeholder names because the capturing group is retained
+    const parts = sourceString.split(/\{([^}]+)\}/g)
     const toPattern = flexible ? buildFlexiblePattern : escapeRegExp
+    const tokenNames: string[] = []
     let patternString = '^(\\s*)'
     parts.forEach((part, index) => {
-        if (part) {
+        const isToken = index % 2 === 1
+        if (isToken) {
+            tokenNames.push(part.trim())
+            // Require at least one character for placeholders
+            patternString += '(.+?)'
+        } else if (part) {
             patternString += toPattern(part)
-        }
-        if (index < parts.length - 1) {
-            patternString += '([\\s\\S]*?)'
         }
     })
     patternString += '(\\s*)$'
-    // console.log(`Pattern for "${sourceString}": ${patternString}`);
     const regex = new RegExp(patternString)
-    return { regex }
+    return { regex, tokenNames }
 }
 
 function testMatch(label: string, source: string, input: string) {
     console.log(`\n--- ${label} ---`);
-    const { regex } = buildTokenizedReplacement(source, "target", true);
+    const { regex, tokenNames } = buildTokenizedReplacement(source, true);
     const match = input.match(regex);
     console.log(`Matched? ${!!match}  (Input: "${input.replace(/\n/g, '\\n').replace(/\u00A0/g, '&nbsp;')}")`);
+    if (match) {
+        const captured = tokenNames.reduce<Record<string, string>>((acc, name, idx) => {
+            acc[name || `token${idx + 1}`] = match[idx + 2]; // skip leading whitespace group
+            return acc;
+        }, {});
+        console.log('Captured tokens:', captured);
+    }
 }
 
 // Case 1: HTML Entities
