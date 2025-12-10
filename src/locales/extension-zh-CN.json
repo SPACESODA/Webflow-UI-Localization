@@ -1,7 +1,7 @@
 {
     "footer_message": "界面翻译由 Webflow UI Localization 扩展功能提供。点击图标即可随时开/关。",
     "footer_options": "选项",
-    "footer_join": "参与翻译？",
+    "footer_join": "参与翻译",
     "options_title": "选择您的 Webflow UI 语言",
     "options_description": "此扩展程序翻译 Webflow 的 Dashboard 和 Designer 界面。为了避免混淆 Webflow 的术语，可能不会翻译所有文字。",
     "options_enable_label": "启用翻译",

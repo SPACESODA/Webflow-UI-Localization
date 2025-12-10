@@ -24,6 +24,9 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Debug Variables
+        run: echo "Languages to pull: ${{ vars.POEDITOR_LANGUAGES }}"
+
       - name: Pull locales from POEditor
         run: node .github/scripts/pull-poeditor.mjs
         env:
