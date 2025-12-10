@@ -69,31 +69,92 @@ function buildFlexiblePattern(value: string): string {
     .join('\\s+')
 }
 
+function buildTokenizedReplacement(
+  sourceString: string,
+  targetString: string,
+  flexible: boolean
+): Replacement {
+  // 1. Identify tokens in source: {name}, {count}, {*}, etc.
+  const tokenRegex = /\{[^}]+\}/g
+  const sourceTokens: string[] = sourceString.match(tokenRegex) || []
+
+  // 2. Build Regex Pattern
+  // Split source by tokens to get static parts
+  const parts = sourceString.split(tokenRegex)
+
+  const toPattern = flexible ? buildFlexiblePattern : escapeRegExp
+
+  let patternString = '^(\\s*)'
+
+  parts.forEach((part, index) => {
+    if (part) {
+      patternString += toPattern(part)
+    }
+    if (index < parts.length - 1) {
+      patternString += '([\\s\\S]*?)' // Capture content for the token
+    }
+  })
+
+  patternString += '(\\s*)$'
+  const regex = new RegExp(patternString)
+
+  // 3. Build Replacement Function
+  const replacement = (_match: string, ...args: any[]) => {
+    // args: [leading, t1, t2, ..., tN, trailing, offset, string]
+    // leading = args[0]
+    // trailing = args[sourceTokens.length + 1]
+
+    const leading = args[0]
+    const trailing = args[sourceTokens.length + 1]
+
+    // Map token names to captured values
+    // Using a pool to handle repeated tokens like {*}
+    const valuePool: Record<string, string[]> = {}
+    sourceTokens.forEach((tokenName, i) => {
+      if (!valuePool[tokenName]) valuePool[tokenName] = []
+      valuePool[tokenName].push(args[i + 1])
+    })
+
+    // Construct result by replacing tokens in targetString
+    // We clone the pool so we can shift values out
+    const currentPool = { ...valuePool }
+    // Shallow copy of arrays inside
+    for (const k in currentPool) {
+      currentPool[k] = [...currentPool[k]]
+    }
+
+    const result = targetString.replace(tokenRegex, (token) => {
+      if (currentPool[token] && currentPool[token].length > 0) {
+        return currentPool[token].shift()!
+      }
+      return token // Leave as is if no value captured?
+    })
+
+    return `${leading}${result}${trailing}`
+  }
+
+  return { regex, replacement }
+}
+
 function buildReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
   if (strict) {
-    const toPattern = FLEXIBLE_STRICT_WHITESPACE ? buildFlexiblePattern : escapeRegExp
-    return Object.entries(dictionary).map(([source, replacement]) => ({
-      regex: new RegExp(`^(\\s*)${toPattern(source)}(\\s*)$`),
-      replacement: (_match: string, leading: string = '', trailing: string = '') =>
-        `${leading}${replacement}${trailing}`
-    }))
+    return Object.entries(dictionary).map(([source, replacement]) =>
+      buildTokenizedReplacement(source, replacement, FLEXIBLE_STRICT_WHITESPACE)
+    )
   }
 
   return Object.entries(dictionary).map(([source, replacement]) => ({
     regex: new RegExp(escapeRegExp(source), 'g'),
     replacement,
-    marker: source.slice(0, 6) // quick marker to short-circuit text without a likely match
+    marker: source.slice(0, 6)
   }))
 }
 
 function buildReverseReplacements(dictionary: Dictionary, strict: boolean): Replacement[] {
   if (strict) {
-    const toPattern = FLEXIBLE_STRICT_WHITESPACE ? buildFlexiblePattern : escapeRegExp
-    return Object.entries(dictionary).map(([source, replacement]) => ({
-      regex: new RegExp(`^(\\s*)${toPattern(replacement)}(\\s*)$`),
-      replacement: (_match: string, leading: string = '', trailing: string = '') =>
-        `${leading}${source}${trailing}`
-    }))
+    return Object.entries(dictionary).map(([source, replacement]) =>
+      buildTokenizedReplacement(replacement, source, FLEXIBLE_STRICT_WHITESPACE)
+    )
   }
 
   return Object.entries(dictionary).map(([source, replacement]) => ({

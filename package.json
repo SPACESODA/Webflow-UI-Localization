@@ -1,8 +1,8 @@
 {
   "private": true,
-  "name": "webflow-multi-lang",
+  "name": "webflow-ui-localization",
   "description": "Translate the Webflow dashboard UI into Japanese or Traditional Chinese.",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "type": "module",
   "author": {
