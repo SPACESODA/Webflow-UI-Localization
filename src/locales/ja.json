@@ -270,11 +270,11 @@
   "Create new page": "新規ページを作成",
   "Search pages and folders": "ページとフォルダを検索",
   "Search CMS": "CMS を検索",
-  "This setting is only available on Enterprise plans. Please": "",
-  "contact sales": "",
-  "for offerings.": "",
-  "View seat comparison": "",
-  "Add seats": "",
-  "Add unlimited team members to your Workspace.": "",
-  "Transfer": ""
+  "This setting is only available on Enterprise plans. Please": "この設定は Enterprise プランでのみ利用できます。詳しくは",
+  "contact sales": "営業担当までお問い合わせ",
+  "for offerings.": "ください。",
+  "View seat comparison": "シート比較を表示",
+  "Add seats": "シートを追加",
+  "Add unlimited team members to your Workspace.": "Workspace に無制限でチームメンバーを追加しましょう。",
+  "Transfer": "転送"
 }
