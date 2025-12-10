@@ -4,13 +4,24 @@ import path from 'path';
 const token = process.env.POEDITOR_API_TOKEN;
 const projectId = process.env.POEDITOR_PROJECT_ID;
 const exportType = process.env.POEDITOR_EXPORT_TYPE || 'key_value_json';
-const languagesEnv = process.env.POEDITOR_LANGUAGES;
+const languagesEnv = process.env.POEDITOR_LANGUAGES?.trim();
 
 if (!token || !projectId) {
   throw new Error('POEDITOR_API_TOKEN and POEDITOR_PROJECT_ID must be set.');
 }
 
-const languageEntries = (languagesEnv || 'ja=src/locales/ja.json,zh-TW=src/locales/zh-TW.json')
+const defaultLanguages = [
+  'ja=src/locales/ja.json',
+  'zh-TW=src/locales/zh-TW.json',
+  'zh-CN=src/locales/zh-CN.json',
+  'ko=src/locales/ko.json'
+].join(',');
+
+if (!languagesEnv) {
+  console.log(`POEDITOR_LANGUAGES not set, using defaults: ${defaultLanguages}`);
+}
+
+const languageEntries = (languagesEnv || defaultLanguages)
   .split(',')
   .map((entry) => entry.trim())
   .filter(Boolean)
