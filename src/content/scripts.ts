@@ -169,15 +169,14 @@ function maybeContains(text: string, marker?: string) {
   return text.includes(marker)
 }
 
-function translateTextNode(node: Text) {
-  const raw = node.data
-  if (!raw.trim() || !activeReplacements.length || !isEnabled) return
+function applyReplacements(text: string, replacements: Replacement[]): { updated: string; changed: boolean } {
+  if (!text.trim() || !replacements.length) return { updated: text, changed: false }
 
-  let updated = raw
+  let updated = text
   let changed = false
 
-  for (let i = 0; i < activeReplacements.length; i += 1) {
-    const { regex, replacement, marker } = activeReplacements[i]
+  for (let i = 0; i < replacements.length; i += 1) {
+    const { regex, replacement, marker } = replacements[i]
     if (!maybeContains(updated, marker)) continue
     const next = updated.replace(regex, replacement as any)
     if (next !== updated) {
@@ -186,32 +185,91 @@ function translateTextNode(node: Text) {
     }
   }
 
+  return { updated, changed }
+}
+
+function translateTextNode(node: Text) {
+  if (!isEnabled) return
+  const { updated, changed } = applyReplacements(node.data, activeReplacements)
   if (changed) {
     node.data = updated
   }
 }
 
 function revertTextNode(node: Text) {
-  const raw = node.data
-  if (!raw.trim() || !reverseReplacements.length || isEnabled) return
-
-  let updated = raw
-  let changed = false
-
-  for (let i = 0; i < reverseReplacements.length; i += 1) {
-    const { regex, replacement, marker } = reverseReplacements[i]
-    if (!maybeContains(updated, marker)) continue
-    const next = updated.replace(regex, replacement as any)
-    if (next !== updated) {
-      updated = next
-      changed = true
-    }
-  }
-
+  // If enabled, we don't revert. Revert is only called when disabling or switching languages.
+  // Actually the logic was "if isEnabled return".
+  if (isEnabled) return
+  
+  const { updated, changed } = applyReplacements(node.data, reverseReplacements)
   if (changed) {
     node.data = updated
   }
 }
+
+let originalTitle = ''
+let titleObserver: MutationObserver | null = null
+
+function translateTitle() {
+  if (!isEnabled) return
+  // If we haven't stored original title yet, do it now? 
+  // But title might change dynamically. 
+  // Ideally, we translate the *current* title.
+  // We need to avoid double translation if we observe our own change.
+  // Similar to text nodes, we probably want to just apply forward replacements.
+  // Use document.title directly.
+  
+  const current = document.title
+  const { updated, changed } = applyReplacements(current, activeReplacements)
+  if (changed) {
+    // If we change it, the observer will fire. We need to handle that loop?
+    // MutationObserver is sync or async? async microtask.
+    // If we just set it, it triggers.
+    // We can temporarily disconnect observer or use a flag?
+    // Or just check if 'updated' is same as current (handled by logic).
+    // If 'current' is already translated, 'applyReplacements' (if strict) shouldn't match?
+    // But if loose, it might mess up.
+    // Usually safe if replacements are idempotent or distinct.
+    document.title = updated
+  }
+}
+
+function revertTitle() {
+  if (isEnabled) return
+  const current = document.title
+  const { updated, changed } = applyReplacements(current, reverseReplacements)
+  if (changed) {
+    document.title = updated
+  }
+}
+
+function observeTitle() {
+  if (titleObserver) titleObserver.disconnect()
+  
+  const titleEl = document.querySelector('title')
+  if (!titleEl) return // Should observe head if title doesn't exist yet? Webflow usually has it.
+
+  titleObserver = new MutationObserver(() => {
+    // When title changes (by app or by us)
+    // If by us, we probably shouldn't react?
+    // But the app might overwrite our translation with English.
+    // So we need to re-apply translation.
+    // To avoid loop: check if translation needed.
+    if (isEnabled) {
+       translateTitle()
+    }
+  })
+
+  titleObserver.observe(titleEl, { childList: true, characterData: true, subtree: true })
+}
+
+function disconnectTitleObserver() {
+    if (titleObserver) {
+        titleObserver.disconnect()
+        titleObserver = null
+    }
+}
+
 
 function shouldSkipTextNode(textNode: Text) {
   const parent = textNode.parentElement
@@ -400,11 +458,16 @@ function applySettings(settings: Settings) {
 
   if (isEnabled) {
     translateWithin(document.body)
+    translateTitle()
     observeDocument()
+    observeTitle()
   } else {
     revertWithin(document.body)
+    revertTitle()
     disconnectObserver()
+    disconnectTitleObserver()
   }
+
 }
 
 function listenForSettingsChanges() {

@@ -36,10 +36,10 @@ This extension is an independent project and is not affiliated with or endorsed 
 
 <br />
 <br />
+<br />
 
 [![Powered by Extension.js][powered-image]][powered-url]
 
-<br />
 <br />
 
 ---
