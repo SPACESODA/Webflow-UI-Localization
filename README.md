@@ -36,7 +36,11 @@ Latest locale JSONs via jsDelivr:
 Made with &hearts; by [Anthony C.](https://x.com/anthonycxc)
 
 ---
+This extension provides unofficial translations that may not be accurate.
+
 This extension is an independent project and is not affiliated with or endorsed by Webflow. Webflow is a trademark of Webflow, Inc.
+
+This extension does not collect, store, or transmit any personal information or usage data.
 
 <br />
 <br />

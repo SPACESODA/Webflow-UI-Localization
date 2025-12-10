@@ -321,6 +321,13 @@ export default function initOptionsPage() {
   footer.appendChild(meta)
   footer.appendChild(unofficialDisclaimer)
   footer.appendChild(disclaimer)
+
+  const privacyDisclaimer = document.createElement('p')
+  privacyDisclaimer.className = 'disclaimer'
+  privacyDisclaimer.textContent =
+    'This extension does not collect, store, or transmit any personal information or usage data.'
+  footer.appendChild(privacyDisclaimer)
+
   container.appendChild(footer)
 }
 

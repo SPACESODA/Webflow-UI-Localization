@@ -298,16 +298,66 @@ function revertWithin(root: Node) {
   }
 }
 
+
+function translatePlaceholder(element: HTMLInputElement | HTMLTextAreaElement) {
+  if (!isEnabled) return
+  const current = element.placeholder
+  if (!current) return
+
+  const { updated, changed } = applyReplacements(current, activeReplacements)
+  if (changed) {
+    element.placeholder = updated
+  }
+}
+
+function revertPlaceholder(element: HTMLInputElement | HTMLTextAreaElement) {
+  const current = element.placeholder
+  if (!current) return
+
+  const { updated, changed } = applyReplacements(current, reverseReplacements)
+  if (changed) {
+    element.placeholder = updated
+  }
+}
+
+function translatePlaceholdersWithin(root: Node) {
+  if (root.nodeType === Node.ELEMENT_NODE) {
+    const el = root as Element
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      translatePlaceholder(el as HTMLInputElement | HTMLTextAreaElement)
+    }
+    const inputs = el.querySelectorAll('input[placeholder], textarea[placeholder]')
+    inputs.forEach((input) => translatePlaceholder(input as HTMLInputElement | HTMLTextAreaElement))
+  }
+}
+
+function revertPlaceholdersWithin(root: Node) {
+  if (root.nodeType === Node.ELEMENT_NODE) {
+    const el = root as Element
+    if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+      revertPlaceholder(el as HTMLInputElement | HTMLTextAreaElement)
+    }
+    const inputs = el.querySelectorAll('input[placeholder], textarea[placeholder]')
+    inputs.forEach((input) => revertPlaceholder(input as HTMLInputElement | HTMLTextAreaElement))
+  }
+}
+
 function flushPending() {
   flushScheduled = false
   if (!document.body) return
 
   if (isEnabled) {
     pendingTextNodes.forEach((text) => translateTextNode(text))
-    pendingElements.forEach((element) => translateWithin(element))
+    pendingElements.forEach((element) => {
+      translateWithin(element)
+      translatePlaceholdersWithin(element)
+    })
   } else {
     pendingTextNodes.forEach((text) => revertTextNode(text))
-    pendingElements.forEach((element) => revertWithin(element))
+    pendingElements.forEach((element) => {
+      revertWithin(element)
+      revertPlaceholdersWithin(element)
+    })
   }
 
   pendingTextNodes.clear()
@@ -340,6 +390,12 @@ function observeDocument() {
         if (mutation.target.nodeType === Node.TEXT_NODE) {
           pendingTextNodes.add(mutation.target as Text)
         }
+      } else if (mutation.type === 'attributes' && mutation.attributeName === 'placeholder') {
+        // Handle placeholder change
+        const target = mutation.target as HTMLInputElement | HTMLTextAreaElement
+        pendingElements.add(target)
+        // We add to pendingElements so it gets processed by translatePlaceholdersWithin
+        // Optimization: could have specific set for attributes but this works since pendingElements triggers scan
       }
 
       mutation.addedNodes.forEach((node) => {
@@ -359,7 +415,9 @@ function observeDocument() {
   observer.observe(document.body, {
     characterData: true,
     childList: true,
-    subtree: true
+    subtree: true,
+    attributes: true,
+    attributeFilter: ['placeholder']
   })
 }
 
@@ -438,10 +496,13 @@ async function refreshLocalesFromCdn() {
 
 function applySettings(settings: Settings) {
   // 1. Revert existing translations if currently enabled
+  // This ensures we have a clean slate (English) before applying a new language
+  // or before disabling.
   if (isEnabled) {
     disconnectObserver()
     disconnectTitleObserver()
     revertWithin(document.body)
+    revertPlaceholdersWithin(document.body)
     revertTitle()
   }
 
@@ -467,6 +528,7 @@ function applySettings(settings: Settings) {
   // 3. Apply new translations if enabled
   if (isEnabled) {
     translateWithin(document.body)
+    translatePlaceholdersWithin(document.body)
     translateTitle()
     observeDocument()
     observeTitle()
