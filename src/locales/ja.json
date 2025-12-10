@@ -308,5 +308,13 @@
   "Showcased sites will appear on your public profile, and in the": "ショーケースに表示されたサイトは、公開プロフィールおよび",
   "under Made in Webflow.": "内の Made in Webflow に表示されます。",
   "You can select up to {*} profile handles. Please ensure the site owner approves of showcasing this site before tagging a creator.": "プロフィールハンドルは最大 {*} 個まで選択できます。クリエイターをタグ付けする前に、このサイトがショーケース掲載をオーナーに承認されていることを確認してください。",
-  "Sites - Webflow": "サイト - Webflow"
+  "Sites - Webflow": "サイト - Webflow",
+  "Real-time collaboration": "",
+  "Protect your published site with a password.": "",
+  "Password protection": "",
+  "Advanced options": "",
+  "Manage guests": "",
+  "Edit client": "",
+  "Leave workspace": "",
+  "Updates & announcements": ""
 }

@@ -56,7 +56,7 @@
   "Legacy guest access": "舊版來賓存取權限",
   "We’ve updated guest access so your whole team can more easily access your client’s workspace. To take advantage of the new functionality, convert your current, individual guest access into access for your workspace instead. While the updated access is pending, your current legacy guest access will remain in place.": "我們已更新來賓存取功能，讓你的整個團隊能更輕鬆地存取客戶的 Workspace。若要使用新功能，請將你目前的個別來賓權限轉換為 Workspace 層級的存取。在更新處理期間，你的舊版來賓權限仍會維持有效。",
   "Learn more": "了解更多",
-  "Bulk edit": "大量編輯",
+  "Bulk edit": "批量編輯",
   "Update access": "更新存取",
   "Error": "錯誤",
   "Something went wrong. Please try again": "發生問題，請再試一次",
@@ -308,5 +308,13 @@
   "Showcased sites will appear on your public profile, and in the": "展示的網站會出現在你的公開個人檔案，以及",
   "under Made in Webflow.": "中的 Made in Webflow 分類下。",
   "You can select up to {*} profile handles. Please ensure the site owner approves of showcasing this site before tagging a creator.": "你可以選擇最多 {*} 個個人檔案。請確保網站擁有者在標記創作者之前批准展示此網站。",
-  "Sites - Webflow": "網站 - Webflow"
+  "Sites - Webflow": "網站 - Webflow",
+  "Real-time collaboration": "",
+  "Protect your published site with a password.": "",
+  "Password protection": "",
+  "Advanced options": "",
+  "Manage guests": "",
+  "Edit client": "",
+  "Leave workspace": "",
+  "Updates & announcements": ""
 }
