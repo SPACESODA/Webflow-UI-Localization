@@ -3,7 +3,7 @@
 
 # Webflow UI Localization
 
-> It is a browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language.
+> An open-source browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language.
 
 The extension swaps UI strings on these Webflow surfaces:
 
@@ -15,13 +15,13 @@ Open the extension’s Options page (click the extension icon) to choose your la
 
 ### Contribute translations
 
-Join the community translation project on POEditor 🦜
+**Join the community translation project on POEditor 🦜**
 
 It's easy to contribute!  
 https://poeditor.com/join/project/7drFUDh3dh
 
 Latest locale JSONs via jsDelivr:  
-https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization
+[https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization](https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization?tab=files&path=src%2Flocales)
 
 <br />
 
