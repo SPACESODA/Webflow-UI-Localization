@@ -13,7 +13,9 @@ import path from 'path';
 
 const files = [
     'src/locales/ja.json',
-    'src/locales/zh-TW.json'
+    'src/locales/zh-TW.json',
+    'src/locales/zh-CN.json',
+    'src/locales/ko.json'
 ];
 
 let hasError = false;

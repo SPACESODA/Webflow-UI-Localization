@@ -1,8 +1,8 @@
 import type { LanguageCode, Dictionary } from '../types'
-import extJa from '../locales/extension-ja.json'
-import extZhTw from '../locales/extension-zh-TW.json'
-import extZhCn from '../locales/extension-zh-CN.json'
-import extKo from '../locales/extension-ko.json'
+import extJa from '../locales-extension/ja.json'
+import extZhTw from '../locales-extension/zh-TW.json'
+import extZhCn from '../locales-extension/zh-CN.json'
+import extKo from '../locales-extension/ko.json'
 
 const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
     ja: extJa,
