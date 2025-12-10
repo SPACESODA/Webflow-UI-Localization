@@ -1,5 +1,8 @@
 ## Do not translate the below words or terms!
 
+DO NOT translate the below words or terms.  
+If these words are in the middle of a sentence, keep them as they are in English within the translated sentence.
+
 - Webflow
 - Made in Webflow
 - Workspace / workspace / Workspaces / workspaces
