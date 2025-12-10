@@ -306,5 +306,6 @@
   "Website password": "網站密碼",
   "Showcase site": "展示網站",
   "Showcased sites will appear on your public profile, and in the": "展示的網站會出現在你的公開個人檔案，以及",
-  "under Made in Webflow.": "中的 Made in Webflow 分類下。"
+  "under Made in Webflow.": "中的 Made in Webflow 分類下。",
+  "You can select up to {*} profile handles. Please ensure the site owner approves of showcasing this site before tagging a creator.": "你可以選擇最多 {*} 個個人檔案。請確保網站擁有者在標記創作者之前批准展示此網站。"
 }

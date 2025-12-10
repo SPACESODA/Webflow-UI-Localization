@@ -306,5 +306,6 @@
   "Website password": "サイトパスワード",
   "Showcase site": "サイトをショーケースに掲載",
   "Showcased sites will appear on your public profile, and in the": "ショーケースに表示されたサイトは、公開プロフィールおよび",
-  "under Made in Webflow.": "内の Made in Webflow に表示されます。"
+  "under Made in Webflow.": "内の Made in Webflow に表示されます。",
+  "You can select up to {*} profile handles. Please ensure the site owner approves of showcasing this site before tagging a creator.": ""
 }
