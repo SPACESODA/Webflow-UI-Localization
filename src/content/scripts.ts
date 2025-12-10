@@ -324,12 +324,9 @@ function scheduleFlush() {
     flushPending()
   }
 
-  if ('requestIdleCallback' in window) {
-    // @ts-ignore
-    window.requestIdleCallback(runner, { timeout: 100 })
-  } else {
-    setTimeout(runner, 16)
-  }
+  // Use requestAnimationFrame to update before the next repaint.
+  // This minimizes the "flash of untranslated content" for dynamic UI elements.
+  requestAnimationFrame(runner)
 }
 
 function observeDocument() {
