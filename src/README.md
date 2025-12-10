@@ -28,4 +28,4 @@ Use the wildcard token when the variable name is unknown or irrelevant.
 
 # Terms Not to be Translated
 
-Please visit [`src/locales/_ref_ai/_no_translate.md`](https://github.com/SPACESODA/Webflow-UI-Localization/blob/main/src/locales/_ref_ai/_no_translate.md) for the list.
+Please visit [`src/locales/_ref_ai/_no_translate.md`](https://github.com/SPACESODA/Webflow-UI-Localization/blob/main/src/locales/_ref/_no_translate.md) for the list.
