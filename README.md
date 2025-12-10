@@ -5,7 +5,7 @@
 
 > An open-source browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language.
 
-The extension swaps UI strings on these Webflow surfaces:
+The extension currently swaps UI strings on the following Webflow surfaces:
 
 - `https://webflow.com/dashboard*`
 - `https://webflow.com/login*`
@@ -13,7 +13,9 @@ The extension swaps UI strings on these Webflow surfaces:
 - `https://preview.webflow.com*`
 - `https://*.design.webflow.com*`
 
-Open the extension’s Options page (click the extension icon) to choose your language or turn translations off to stay in English. You can also click the toolbar extension icon to toggle translations (badge shows OFF when disabled).
+Open the extension’s Options page (by right-clicking the extension icon) to select your language. You can also click the toolbar icon to toggle translations at any time — the badge will show OFF when translations are disabled.
+
+The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Korean first, with more languages to be added over time.
 
 ### Contribute translations
 
@@ -29,11 +31,15 @@ Latest locale JSONs via jsDelivr:
 
 Made with &hearts; by [Anthony C.](https://x.com/anthonycxc)
 
+---
+This extension is an independent project and is not affiliated with or endorsed by Webflow. Webflow is a trademark of Webflow, Inc.
+
 <br />
 <br />
 
 [![Powered by Extension.js][powered-image]][powered-url]
 
+<br />
 <br />
 
 ---
