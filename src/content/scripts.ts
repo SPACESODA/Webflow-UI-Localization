@@ -272,7 +272,12 @@ function applyReplacements(
   for (let i = 0; i < replacements.length; i += 1) {
     const { regex, replacement, marker } = replacements[i]
     if (!maybeContains(updated, marker)) continue
-    const next = updated.replace(regex, replacement as any)
+    let next: string
+    if (typeof replacement === 'function') {
+      next = updated.replace(regex, replacement)
+    } else {
+      next = updated.replace(regex, replacement)
+    }
     if (next !== updated) {
       updated = next
       changed = true
@@ -747,7 +752,7 @@ function applySettings(settings: Settings) {
   reverseReplacements = builtReverse.complex
   reverseExactReplacements = builtReverse.exact
 
-  const activeCount = activeReplacements.length + activeExactReplacements.size
+  // const activeCount = activeReplacements.length + activeExactReplacements.size
   // console.log(`[Webflow-Localization] Loaded ${activeCount} replacements (${activeExactReplacements.size} exact, ${activeReplacements.length} complex)`)
   updateDocumentLang(currentLanguage, isEnabled)
 
