@@ -42,6 +42,7 @@ import { EXCLUDED_SELECTORS } from './exclusions'
 
 const IGNORE_PATTERN = EXCLUDED_SELECTORS.join(',')
 
+
 let activeReplacements: Replacement[] = []
 let activeExactReplacements: Map<string, string> = new Map()
 let reverseReplacements: Replacement[] = []
@@ -53,6 +54,7 @@ let latestSettings: Settings = DEFAULT_SETTINGS
 let loadedLanguages: Record<Exclude<LanguageCode, 'off'>, Dictionary> = { ...BUNDLED_LANGUAGES }
 let observer: MutationObserver | null = null
 let flushScheduled = false
+
 const pendingTextNodes = new Set<Text>()
 const pendingElements = new Set<Element>()
 const LOCALE_PRIMARY_BASE = 'https://webflow-ui-localization.pages.dev/src/locales'
@@ -63,6 +65,22 @@ const LOCALE_CACHE_KEY = 'cdnLocaleCache'
 type CachedLocaleEntry = { dictionary: Dictionary; fetchedAt: number; source: 'primary' | 'secondary' }
 let localeCache: Record<Exclude<LanguageCode, 'off'>, CachedLocaleEntry> = {} as any
 let cacheLoaded = false
+
+
+function isDevtoolsNode(node: Node): boolean {
+  if (!(node instanceof Element)) return false
+  const id = node.id || ''
+  if (id.startsWith('__web-inspector')) return true
+  const className = typeof node.className === 'string' ? node.className : ''
+  if (className.includes('devtools')) return true
+  return false
+}
+
+function shouldProcessNode(node: Node): boolean {
+  if (isDevtoolsNode(node)) return false
+  return true
+}
+
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -98,18 +116,15 @@ function buildTokenizedReplacement(
   parts.forEach((part, index) => {
     const isToken = index % 2 === 1
     if (isToken) {
-      // It's a token (e.g. "name" from "{name}")
-      // We normalize it to the full placeholder format "{name}" for the pool lookup
-      // or just keep the name? 
-      // scripts.ts logic uses "{name}" as keys in valuePool. 
-      // The split gives us just "name". Let's reconstruct it.
+      // it is a token (e.g. "name" from "{name}")
+      // reconstruct the token with braces for identification
       const tokenName = `{${part}}`
       tokenNames.push(tokenName)
 
-      // Require at least one character for placeholders to avoid "ghost" matches
+      // require at least one character to capture
       patternString += '(.+?)'
     } else if (part) {
-      // It's static text
+      // static text
       patternString += toPattern(part)
     }
   })
@@ -126,8 +141,7 @@ function buildTokenizedReplacement(
     const leading = args[0]
     const trailing = args[tokenNames.length + 1]
 
-    // Map token names to captured values
-    // Using a pool to handle repeated tokens like {*}
+    // map token names to captured values
     const valuePool: Record<string, string[]> = {}
 
     tokenNames.forEach((tokenName, i) => {
@@ -135,15 +149,13 @@ function buildTokenizedReplacement(
       valuePool[tokenName].push(args[i + 1])
     })
 
-    // Construct result by replacing tokens in targetString
-    // We clone the pool so we can shift values out
+    // copy pool to manage consumption of values
     const currentPool = { ...valuePool }
-    // Shallow copy of arrays inside
     for (const k in currentPool) {
       currentPool[k] = [...currentPool[k]]
     }
 
-    // We use the same regex for target replacement to find where to put values
+    // replace tokens in the target string with captured values
     const targetTokenRegex = /\{[^}]+\}/g
 
     const result = targetString.replace(targetTokenRegex, (token) => {
@@ -151,12 +163,10 @@ function buildTokenizedReplacement(
         return currentPool[token].shift()!
       }
 
-      // Warn if we have a placeholder in translation that we can't fill
-      // This usually means the translation file has a typo (e.g. {naame} instead of {name})
-      // or expects a variable that the source text didn't provide.
+      // warn if missing a value for a placeholder (e.g. typo in translation or missing var)
       console.warn(`[Webflow-Localization] Missing value for token "${token}" in translation for: "${sourceString}"`)
 
-      return token // Leave as is
+      return token // leave placeholder as is
     })
 
     return `${leading}${result}${trailing}`
@@ -172,12 +182,11 @@ function buildReplacements(dictionary: Dictionary, strict: boolean): { exact: Ma
 
   if (strict) {
     entries.forEach(([source, replacement]) => {
-      // If source has placeholders, use regex
+      // 1. Complex Match: if source has placeholders, use regex
       if (source.includes('{') && source.includes('}')) {
         complex.push(buildTokenizedReplacement(source, replacement, FLEXIBLE_STRICT_WHITESPACE))
       } else {
-        // Exact match optimization
-        // We normalize the key for lookup
+        // 2. Exact Match Optimization: use Map for O(1) lookup
         const key = normalizeWhitespace(source).trim()
         if (key) {
           exact.set(key, replacement)
@@ -187,7 +196,7 @@ function buildReplacements(dictionary: Dictionary, strict: boolean): { exact: Ma
     return { exact, complex }
   }
 
-  // Non-strict mode always uses regex for partial matching
+  // Non-strict mode always uses regex for partial matching (Legacy behavior)
   const legacyReplacements = entries.map(([source, replacement]: [string, string]) => ({
     regex: new RegExp(escapeRegExp(source), 'g'),
     replacement,
@@ -239,12 +248,13 @@ function applyReplacements(
   if (!text.trim()) return { updated: text, changed: false }
 
   // 1. Exact Match Optimization (Strict Mode)
+  // O(1) lookup for identifying common UI elements instantly.
   if (exactMap.size > 0) {
     const normalized = normalizeWhitespace(text).trim()
     if (exactMap.has(normalized)) {
       const replacement = exactMap.get(normalized)!
 
-      // Preserve leading/trailing whitespace
+      // preserve leading/trailing whitespace from original text
       const match = text.match(/^(\s*)([\s\S]*?)(\s*)$/)
       if (match) {
         return { updated: match[1] + replacement + match[3], changed: true }
@@ -252,6 +262,8 @@ function applyReplacements(
     }
   }
 
+  // 2. Complex/Partial Match
+  // Iterates through regex patterns for dynamic content (e.g. placeholders).
   if (!replacements.length) return { updated: text, changed: false }
 
   let updated = text
@@ -314,10 +326,9 @@ function revertTitle() {
 
 const handleTitleMutations: MutationCallback = () => {
   // When title changes (by app or by us)
-  // If by us, we probably shouldn't react?
-  // But the app might overwrite our translation with English.
-  // So we need to re-apply translation.
-  // To avoid loop: check if translation needed.
+  // Logic: if the app overwrites our title with English, we re-apply translation.
+  // The infinite loop is prevented by checking if translation is actually needed
+  // inside translateTitle (via applyReplacements check).
   if (isEnabled) {
     translateTitle()
   }
@@ -349,7 +360,7 @@ function shouldSkipTextNode(textNode: Text) {
   if (!parent) return true
   if (SKIP_TAGS.has(parent.tagName)) return true
   if (parent.isContentEditable) return true
-  if (IGNORE_PATTERN && parent.closest(IGNORE_PATTERN)) return true
+  if (IGNORE_PATTERN && IGNORE_PATTERN.trim() && parent.closest(IGNORE_PATTERN)) return true
   if (!textNode.textContent?.trim()) return true
   return false
 }
@@ -430,37 +441,50 @@ function flushPending() {
   flushScheduled = false
   if (!document.body) return
 
-  // Suspend observers to prevent infinite loops and performance issues
-  // caused by our own mutations triggering the observer again.
+  // Suspend observers to prevent infinite loops and performance issues.
+  // This is critical: modifying the DOM while observing it would trigger
+  // immediate recursion, freezing the browser.
   if (observer) observer.disconnect()
   if (titleObserver) titleObserver.disconnect()
 
+
+
+  const textNodes = Array.from(pendingTextNodes)
+  const elements = Array.from(pendingElements)
+
+  pendingTextNodes.clear()
+  pendingElements.clear()
+
   if (isEnabled) {
-    pendingTextNodes.forEach((text) => translateTextNode(text))
-    pendingElements.forEach((element) => {
+    textNodes.forEach((text) => translateTextNode(text))
+    elements.forEach((element) => {
       translateWithin(element)
       translatePlaceholdersWithin(element)
     })
   } else {
-    pendingTextNodes.forEach((text) => revertTextNode(text))
-    pendingElements.forEach((element) => {
+    textNodes.forEach((text) => revertTextNode(text))
+    elements.forEach((element) => {
       revertWithin(element)
       revertPlaceholdersWithin(element)
     })
   }
 
-  pendingTextNodes.clear()
-  pendingElements.clear()
-
   injectDashboardFooter(currentLanguage, isEnabled, (updates: any) => {
     applySettings({ ...latestSettings, ...updates })
   })
 
+
+
   // Resume observers
-  // We re-call observe functions which re-instantiate or re-connect the observers.
   if (isEnabled) {
     observeDocument()
     observeTitle()
+  }
+
+  // If new mutations occurred during the flush (rare but possible),
+  // schedule another pass to handle them.
+  if (pendingTextNodes.size || pendingElements.size) {
+    scheduleFlush()
   }
 }
 
@@ -481,19 +505,22 @@ function scheduleFlush() {
 
 const handleDocumentMutations: MutationCallback = (mutations) => {
   mutations.forEach((mutation) => {
+    if (!shouldProcessNode(mutation.target)) {
+      return
+    }
+
     if (mutation.type === 'characterData') {
       if (mutation.target.nodeType === Node.TEXT_NODE) {
         pendingTextNodes.add(mutation.target as Text)
       }
     } else if (mutation.type === 'attributes' && mutation.attributeName === 'placeholder') {
-      // Handle placeholder change
+      // optimization: we track the element so we can rescan its placeholders
       const target = mutation.target as HTMLInputElement | HTMLTextAreaElement
       pendingElements.add(target)
-      // We add to pendingElements so it gets processed by translatePlaceholdersWithin
-      // Optimization: could have specific set for attributes but this works since pendingElements triggers scan
     }
 
     mutation.addedNodes.forEach((node) => {
+      if (!shouldProcessNode(node)) return
       if (node.nodeType === Node.TEXT_NODE) {
         pendingTextNodes.add(node as Text)
       } else if (node.nodeType === Node.ELEMENT_NODE) {
@@ -685,9 +712,8 @@ async function refreshLocalesFromCdn() {
 }
 
 function applySettings(settings: Settings) {
-  // 1. Revert existing translations if currently enabled
-  // This ensures we have a clean slate (English) before applying a new language
-  // or before disabling.
+  // 1. Revert existing translations if currently enabled.
+  // Ensures a clean slate (English) before applying new language or disqualifying.
   if (isEnabled) {
     disconnectObserver()
     disconnectTitleObserver()
