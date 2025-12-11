@@ -1,11 +1,15 @@
+<p align="center">
+  <img src="https://webflow-ui-localization.pages.dev/src/images/icon-128.svg" alt="Webflow UI Localization" width="96">
+</p>
+
 [powered-image]: https://img.shields.io/badge/Powered%20by-Extension.js-0971fe
 [powered-url]: https://extension.js.org
 
-# Webflow UI Localization
+# Kamoflow - Webflow UI Localization
 
-> An open-source browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language!
+**Kamoflow** is an open-source browser extension that allows you to translate the UI of Webflow Dashboard and Designer into your language!
 
-The extension currently swaps UI strings on the following Webflow surfaces.
+It seamlessly translates the interface across the following Webflow surfaces:
 
 Webflow pages:
 - `https://webflow.com/dashboard*`
@@ -17,7 +21,7 @@ Webflow Designer pages:
 - `https://preview.webflow.com*`
 - `https://*.design.webflow.com*`
 
-Open the extension’s Options page (by right-clicking the extension icon) to select your language. You can also click the toolbar icon to toggle translations at any time — the badge will show OFF when translations are disabled.
+Open the extension’s Options page to select your language. You can also click the toolbar icon to toggle translations at any time — the badge will show OFF when translations are disabled.
 
 The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Korean first, with more languages to be added over time.
 
