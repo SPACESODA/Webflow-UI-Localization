@@ -21,7 +21,7 @@ const files = [
 let hasError = false;
 
 // Regex to match valid JSON numbers (see ECMA-404)
-const JSON_NUMBER_REGEX = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
+const JSON_NUMBER_REGEX = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?$/;
 
 /**
  * Lightweight JSON parser to detect duplicate keys per object while still
