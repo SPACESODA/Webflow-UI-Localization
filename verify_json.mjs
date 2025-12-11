@@ -66,7 +66,7 @@ function verifyJsonStructure(source) {
                     // Use JSON.parse to properly unescape
                     JSON.parse(raw);
                 } catch (e) {
-                    error(`Invalid string escape sequence: ${e?.message || e}`);
+                    error(`Invalid string escape sequence in ${raw}: ${e?.message || e}`);
                 }
                 advance(); // closing quote
                 return raw;
