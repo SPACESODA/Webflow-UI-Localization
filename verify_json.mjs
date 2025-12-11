@@ -33,7 +33,6 @@ function verifyJsonStructure(source) {
     const duplicates = [];
 
 
-
     function error(message) {
         throw new Error(`${message} at position ${index}`);
     }
