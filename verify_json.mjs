@@ -20,6 +20,9 @@ const files = [
 
 let hasError = false;
 
+// Regex to match valid JSON numbers (see ECMA-404)
+const JSON_NUMBER_REGEX = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
+
 /**
  * Lightweight JSON parser to detect duplicate keys per object while still
  * validating that the JSON is well-formed. Avoids false positives from
@@ -29,7 +32,7 @@ function verifyJsonStructure(source) {
     let index = 0;
     const duplicates = [];
 
-    const numberRegex = /^-?(0|[1-9]\d*)(\.\d+)?([eE][+-]?\d+)?/;
+
 
     function error(message) {
         throw new Error(`${message} at position ${index}`);
@@ -63,7 +66,7 @@ function verifyJsonStructure(source) {
                     // Use JSON.parse to properly unescape
                     JSON.parse(raw);
                 } catch (e) {
-                    error(`Invalid string escape sequence: ${e && e.message ? e.message : e}`);
+                    error(`Invalid string escape sequence: ${e?.message || e}`);
                 }
                 advance(); // closing quote
                 return raw;
@@ -75,7 +78,7 @@ function verifyJsonStructure(source) {
 
     function parseNumber() {
         const remaining = source.slice(index);
-        const match = remaining.match(numberRegex);
+        const match = remaining.match(JSON_NUMBER_REGEX);
         if (!match) error('Invalid number');
         advance(match[0].length);
     }
@@ -121,7 +124,7 @@ function verifyJsonStructure(source) {
         }
         while (true) {
             skipWhitespace();
-            // const keyStart = index; // Unused
+
             const rawKey = parseString();
             const key = JSON.parse(rawKey);
             skipWhitespace();

@@ -11,15 +11,15 @@
 
 **Kumaflow** is an open-source browser extension that lets you translate the Webflow Dashboard pages and Designer UI into your language!
 
-Its powerful matching engine seamlessly displays translated text across the following Webflow surfaces.
+🐻 **ウオォォォー！** Kuma works hard behind the scenes, seamlessly showing translated text across these Webflow surfaces — all powered by our matching engine:
 
-Webflow pages:
+**Webflow pages**
 - `https://webflow.com/dashboard*`
 - `https://webflow.com/login*`
 - `https://webflow.com/signup*`
 - `https://webflow.com/forgot*`
 
-Webflow Designer pages:
+**Webflow Designer pages**
 - `https://preview.webflow.com*`
 - `https://*.design.webflow.com*`
 
