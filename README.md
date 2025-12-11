@@ -23,9 +23,10 @@ The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Ko
 
 ### Contribute translations
 
-**Join the community translation project on POEditor 🦜**
+**Join to translate togehter on POEditor 🦜**
 
-It's easy to contribute!  
+Contributions to terms (also called strings or nodes) are especially appreciated —  
+and it’s easy to get started!   
 https://poeditor.com/join/project/7drFUDh3dh
 
 Latest locale JSON files via Cloudflare Pages / jsDelivr:
