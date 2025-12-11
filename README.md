@@ -14,16 +14,20 @@
 🐻 **ウオォォォー！** Kuma works hard behind the scenes, seamlessly showing translated text across these Webflow surfaces — all powered by our matching engine:
 
 **Webflow pages**
+
 - `https://webflow.com/dashboard*`
 - `https://webflow.com/login*`
 - `https://webflow.com/signup*`
 - `https://webflow.com/forgot*`
 
 **Webflow Designer pages**
+
 - `https://preview.webflow.com*`
 - `https://*.design.webflow.com*`
 
-Open the extension’s Options page to select your language. You can also click the toolbar icon to toggle translations at any time — the badge will show OFF when translations are disabled.
+Open the extension's Options page to select your language. In the Webflow Designer, you can also switch languages instantly using the dropdown menu in the settings.
+
+Click the toolbar icon to toggle translations at any time. This acts as a master switch — the badge will show OFF when translations are disabled.
 
 The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Korean first, with more languages to be added over time.
 
