@@ -121,7 +121,7 @@ function verifyJsonStructure(source) {
         }
         while (true) {
             skipWhitespace();
-            const keyStart = index;
+            // const keyStart = index; // Unused
             const rawKey = parseString();
             const key = JSON.parse(rawKey);
             skipWhitespace();

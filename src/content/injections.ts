@@ -20,6 +20,7 @@ type SettingsUpdate = { language?: LanguageCode; enabled?: boolean }
 let isReady = false
 let pendingArgs: { currentLanguage: Exclude<LanguageCode, 'off'>, isEnabled: boolean, onUpdate?: (settings: SettingsUpdate) => void } | null = null
 let lastPathname = window.location.pathname
+const FOOTER_CHECK_INTERVAL_MS = 2000
 
 // Initial 2s delay to avoid racing Webflow's UI render
 setTimeout(() => {
@@ -29,25 +30,24 @@ setTimeout(() => {
     }
 }, 2000)
 
-// Lightweight SPA/path change watcher to re-inject when Webflow navigates without a full reload
-setInterval(() => {
-    const { pathname } = window.location
-    if (pathname !== lastPathname) {
-        lastPathname = pathname
-        if (pendingArgs && isReady) {
-            injectDashboardFooter(pendingArgs.currentLanguage, pendingArgs.isEnabled, pendingArgs.onUpdate)
-        }
-    }
-}, 1000)
-
-// Periodic health check to re-add the footer if Webflow re-renders the nav/pane
+// Single watchdog for SPA navigation and footer presence/state
 setInterval(() => {
     if (!isReady || !pendingArgs) return
+    const { pathname } = window.location
     const footer = document.getElementById('webflow-ui-localization-footer')
-    if (!footer) {
+
+    const pathChanged = pathname !== lastPathname
+    const footerMissing = !footer
+    const footerStale = footer
+        ? footer.dataset.lang !== pendingArgs.currentLanguage ||
+          footer.dataset.enabled !== String(pendingArgs.isEnabled)
+        : false
+
+    if (pathChanged || footerMissing || footerStale) {
+        lastPathname = pathname
         injectDashboardFooter(pendingArgs.currentLanguage, pendingArgs.isEnabled, pendingArgs.onUpdate)
     }
-}, 5000)
+}, FOOTER_CHECK_INTERVAL_MS)
 
 export function injectDashboardFooter(
     currentLanguage: Exclude<LanguageCode, 'off'>,

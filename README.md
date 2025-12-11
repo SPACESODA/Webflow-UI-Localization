@@ -28,9 +28,12 @@ The plan is to support Japanese, Traditional Chinese, Simplified Chinese, and Ko
 It's easy to contribute!  
 https://poeditor.com/join/project/7drFUDh3dh
 
-Latest locale JSONs via jsDelivr:  
-[https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization](https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization?tab=files&path=src%2Flocales)
+Latest locale JSON files via Cloudflare Pages / jsDelivr:
 
+- [Cloudflare Pages](https://webflow-ui-localization.pages.dev/src/locales/)  
+- [jsDelivr](https://www.jsdelivr.com/package/gh/SPACESODA/Webflow-UI-Localization?tab=files&path=src%2Flocales)
+
+<br />
 <br />
 
 Made with &hearts; by [Anthony C.](https://x.com/anthonycxc)

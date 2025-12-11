@@ -53,13 +53,14 @@ let observer: MutationObserver | null = null
 let flushScheduled = false
 const pendingTextNodes = new Set<Text>()
 const pendingElements = new Set<Element>()
-const CDN_REPO_OWNER = 'SPACESODA'
-const CDN_REPO_NAME = 'Webflow-UI-Localization'
-const CDN_REPO_BRANCH = 'main'
-const CDN_SHA_CACHE_TTL = 60 * 60 * 1000 // 60 minutes
-const CDN_SHA_STORAGE_KEY = 'cdnSha'
-let cachedCdnSha: string | null = null
-let cachedCdnShaFetchedAt = 0
+const LOCALE_PRIMARY_BASE = 'https://webflow-ui-localization.pages.dev/src/locales'
+const LOCALE_SECONDARY_BASE =
+  'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales'
+const LOCALE_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+const LOCALE_CACHE_KEY = 'cdnLocaleCache'
+type CachedLocaleEntry = { dictionary: Dictionary; fetchedAt: number; source: 'primary' | 'secondary' }
+let localeCache: Record<Exclude<LanguageCode, 'off'>, CachedLocaleEntry> = {} as any
+let cacheLoaded = false
 
 function escapeRegExp(value: string): string {
   return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
@@ -463,6 +464,12 @@ function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStor
   return chrome.storage.local
 }
 
+function getCacheStorage(): chrome.storage.LocalStorageArea | chrome.storage.SyncStorageArea {
+  // Cache can be larger; prefer local to avoid sync quotas.
+  if (chrome?.storage?.local) return chrome.storage.local
+  return chrome.storage.sync
+}
+
 function getSavedSettings(): Promise<Settings> {
   const storage = getStorage()
   return new Promise((resolve) => {
@@ -486,37 +493,11 @@ function updateDocumentLang(language: LanguageCode, enabled: boolean) {
   document.documentElement?.setAttribute('lang', langToSet)
 }
 
-async function fetchLatestCdnSha(): Promise<string> {
-  const now = Date.now()
-  if (cachedCdnSha && now - cachedCdnShaFetchedAt < CDN_SHA_CACHE_TTL) {
-    return cachedCdnSha
-  }
-
-  const commitUrl = `https://api.github.com/repos/${CDN_REPO_OWNER}/${CDN_REPO_NAME}/commits/${CDN_REPO_BRANCH}`
-  const response = await fetch(commitUrl, {
-    headers: { Accept: 'application/vnd.github+json' }
-  })
-  if (!response.ok) {
-    throw new Error(`Failed to fetch latest commit SHA: ${response.status}`)
-  }
-  const data = await response.json()
-  const sha = data?.sha
-  if (!sha || typeof sha !== 'string') {
-    throw new Error('Commit SHA missing in GitHub response')
-  }
-  cachedCdnSha = sha
-  cachedCdnShaFetchedAt = now
-  try {
-    getStorage().set({ [CDN_SHA_STORAGE_KEY]: sha })
-  } catch (err) {
-    // Best-effort persistence; failures are non-blocking.
-    console.warn('Could not persist CDN SHA', err)
-  }
-  return sha
-}
-
-function buildCdnLocaleUrl(code: Exclude<LanguageCode, 'off'>, sha: string): string {
-  return `https://cdn.jsdelivr.net/gh/${CDN_REPO_OWNER}/${CDN_REPO_NAME}@${sha}/src/locales/${code}.json`
+function buildLocaleUrls(code: Exclude<LanguageCode, 'off'>): Array<{ url: string; source: 'primary' | 'secondary' }> {
+  return [
+    { url: `${LOCALE_PRIMARY_BASE}/${code}.json`, source: 'primary' },
+    { url: `${LOCALE_SECONDARY_BASE}/${code}.json`, source: 'secondary' }
+  ]
 }
 
 async function fetchLocale(url: string): Promise<Dictionary> {
@@ -532,30 +513,94 @@ async function fetchLocale(url: string): Promise<Dictionary> {
   return data as Dictionary
 }
 
+async function loadLocaleCacheFromStorage(): Promise<void> {
+  if (cacheLoaded) return
+  const storage = getCacheStorage()
+  await new Promise<void>((resolve) => {
+    storage.get({ [LOCALE_CACHE_KEY]: {} }, (result) => {
+      const cached = (result as any)[LOCALE_CACHE_KEY] || {}
+      const now = Date.now()
+      Object.entries(cached as Record<string, CachedLocaleEntry>).forEach(([code, entry]) => {
+        if (now - entry.fetchedAt < LOCALE_CACHE_TTL) {
+          localeCache[code as Exclude<LanguageCode, 'off'>] = entry
+        }
+      })
+      cacheLoaded = true
+      resolve()
+    })
+  })
+}
+
+function persistLocaleCache() {
+  try {
+    getCacheStorage().set({ [LOCALE_CACHE_KEY]: localeCache })
+  } catch (err) {
+    console.warn('Could not persist locale cache', err)
+  }
+}
+
+function getCachedLocale(
+  code: Exclude<LanguageCode, 'off'>
+): CachedLocaleEntry | null {
+  const entry = localeCache[code]
+  if (!entry) return null
+  if (Date.now() - entry.fetchedAt > LOCALE_CACHE_TTL) return null
+  return entry
+}
+
+function cacheLocale(
+  code: Exclude<LanguageCode, 'off'>,
+  dictionary: Dictionary,
+  source: 'primary' | 'secondary'
+) {
+  localeCache[code] = { dictionary, fetchedAt: Date.now(), source }
+  persistLocaleCache()
+}
+
+async function fetchLocaleWithFallback(code: Exclude<LanguageCode, 'off'>): Promise<Dictionary | null> {
+  const sources = buildLocaleUrls(code)
+  for (let i = 0; i < sources.length; i += 1) {
+    const { url, source } = sources[i]
+    try {
+      const locale = await fetchLocale(url)
+      cacheLocale(code, locale, source)
+      return locale
+    } catch (err) {
+      console.warn(`Could not fetch locale for ${code} from ${source}`, err)
+    }
+  }
+  return null
+}
+
+async function primeLocalesFromCache() {
+  await loadLocaleCacheFromStorage()
+  Object.entries(localeCache).forEach(([code, entry]) => {
+    loadedLanguages[code as Exclude<LanguageCode, 'off'>] = entry.dictionary
+  })
+}
+
 async function refreshLocalesFromCdn() {
   if (!latestSettings.useCdn) return
-
-  let sha: string | null = null
-  try {
-    sha = await fetchLatestCdnSha()
-  } catch (err) {
-    console.warn('Could not fetch latest CDN SHA; keeping existing locales', err)
-    return
-  }
-
-  if (!sha) return
+  await loadLocaleCacheFromStorage()
 
   const updates: Partial<Record<Exclude<LanguageCode, 'off'>, Dictionary>> = {}
   const codes = Object.keys(BUNDLED_LANGUAGES) as Exclude<LanguageCode, 'off'>[]
+  const now = Date.now()
 
   await Promise.all(
     codes.map(async (code) => {
-      try {
-        const localeUrl = buildCdnLocaleUrl(code, sha)
-        const locale = await fetchLocale(localeUrl)
+      const cached = getCachedLocale(code)
+      if (cached && now - cached.fetchedAt < LOCALE_CACHE_TTL) {
+        updates[code] = cached.dictionary
+        return
+      }
+
+      const locale = await fetchLocaleWithFallback(code)
+      if (locale) {
         updates[code] = locale
-      } catch (err) {
-        console.warn(`Could not refresh locale for ${code}`, err)
+      } else if (cached) {
+        // Use stale cache as a soft fallback if network fails.
+        updates[code] = cached.dictionary
       }
     })
   )
@@ -639,31 +684,18 @@ function listenForSettingsChanges() {
   })
 }
 
-
-function startFooterWatchdog() {
-  // Repeatedly check and inject footer. 
-  // This is cheap (document.querySelector) and ensures the footer appears 
-  // even if the extension is disabled (so no main observer) or if the UI loads late.
-  setInterval(() => {
-    injectDashboardFooter(currentLanguage, isEnabled, (updates) => {
-      applySettings({ ...latestSettings, ...updates })
-    })
-  }, 1000)
-}
-
 function init() {
   if (!document.body) return
   getSavedSettings()
-    .then((settings) => {
+    .then(async (settings) => {
+      await primeLocalesFromCache()
       applySettings(settings)
       listenForSettingsChanges()
       refreshLocalesFromCdn()
-      startFooterWatchdog()
     })
     .catch((err) => {
       console.warn('Failed to load saved settings', err)
       refreshLocalesFromCdn()
-      startFooterWatchdog()
     })
 }
 

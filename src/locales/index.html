@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow, noarchive">
+    <title>Webflow UI Localization - Locale Links</title>
+    <style>
+        :root {
+            --bg-color: #f5f5f7;
+            --card-bg: #ffffff;
+            --text-primary: #1d1d1f;
+            --text-secondary: #86868b;
+            --accent-color: #0071e3;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            line-height: 1.5;
+            margin: 0;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: -0.025em;
+        }
+
+        p.subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .locale-card {
+            background: var(--card-bg);
+            border-radius: var(--border-radius);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s ease;
+        }
+
+        .locale-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .locale-header {
+            display: flex;
+            align-items: baseline;
+            gap: 12px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid #f0f0f0;
+            padding-bottom: 12px;
+        }
+
+        .lang-native {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .lang-english {
+            color: var(--text-secondary);
+            font-size: 1rem;
+            font-weight: 400;
+        }
+
+        .lang-code {
+            margin-left: auto;
+            background-color: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .link-group {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .link-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .link-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .url-display {
+            background-color: #f8f9fa;
+            border: 1px solid #e1e1e1;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-family: "SF Mono", "Monaco", "Inconsolata", "Fira Mono", "Droid Sans Mono", "Source Code Pro", monospace;
+            font-size: 0.85rem;
+            word-break: break-all;
+            color: #333;
+            text-decoration: none;
+            display: block;
+            transition: border-color 0.2s, background-color 0.2s;
+        }
+
+        .url-display:hover {
+            border-color: var(--accent-color);
+            background-color: #f0f7ff;
+            color: var(--accent-color);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Extension Locale Files</h1>
+            <p class="subtitle">Direct CDN links for Webflow UI Localization language files</p>
+        </header>
+
+        <!-- Japanese -->
+        <div class="locale-card">
+            <div class="locale-header">
+                <span class="lang-native">日本語</span>
+                <span class="lang-english">Japanese</span>
+                <span class="lang-code">ja</span>
+            </div>
+            <div class="link-group">
+                <div class="link-item">
+                    <span class="link-label">Pages.dev</span>
+                    <a href="https://webflow-ui-localization.pages.dev/src/locales/ja.json" class="url-display"
+                        target="_blank"
+                        rel="noopener noreferrer">https://webflow-ui-localization.pages.dev/src/locales/ja.json</a>
+                </div>
+                <div class="link-item">
+                    <span class="link-label">jsDelivr CDN (Latest)</span>
+                    <a href="https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ja.json"
+                        class="url-display" target="_blank"
+                        rel="noopener noreferrer">https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ja.json</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Traditional Chinese -->
+        <div class="locale-card">
+            <div class="locale-header">
+                <span class="lang-native">繁體中文</span>
+                <span class="lang-english">Traditional Chinese</span>
+                <span class="lang-code">zh-TW</span>
+            </div>
+            <div class="link-group">
+                <div class="link-item">
+                    <span class="link-label">Pages.dev</span>
+                    <a href="https://webflow-ui-localization.pages.dev/src/locales/zh-TW.json" class="url-display"
+                        target="_blank"
+                        rel="noopener noreferrer">https://webflow-ui-localization.pages.dev/src/locales/zh-TW.json</a>
+                </div>
+                <div class="link-item">
+                    <span class="link-label">jsDelivr CDN (Latest)</span>
+                    <a href="https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-TW.json"
+                        class="url-display" target="_blank"
+                        rel="noopener noreferrer">https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-TW.json</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Simplified Chinese -->
+        <div class="locale-card">
+            <div class="locale-header">
+                <span class="lang-native">简体中文</span>
+                <span class="lang-english">Simplified Chinese</span>
+                <span class="lang-code">zh-CN</span>
+            </div>
+            <div class="link-group">
+                <div class="link-item">
+                    <span class="link-label">Pages.dev</span>
+                    <a href="https://webflow-ui-localization.pages.dev/src/locales/zh-CN.json" class="url-display"
+                        target="_blank"
+                        rel="noopener noreferrer">https://webflow-ui-localization.pages.dev/src/locales/zh-CN.json</a>
+                </div>
+                <div class="link-item">
+                    <span class="link-label">jsDelivr CDN (Latest)</span>
+                    <a href="https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-CN.json"
+                        class="url-display" target="_blank"
+                        rel="noopener noreferrer">https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/zh-CN.json</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Korean -->
+        <div class="locale-card">
+            <div class="locale-header">
+                <span class="lang-native">한국어</span>
+                <span class="lang-english">Korean</span>
+                <span class="lang-code">ko</span>
+            </div>
+            <div class="link-group">
+                <div class="link-item">
+                    <span class="link-label">Pages.dev</span>
+                    <a href="https://webflow-ui-localization.pages.dev/src/locales/ko.json" class="url-display"
+                        target="_blank"
+                        rel="noopener noreferrer">https://webflow-ui-localization.pages.dev/src/locales/ko.json</a>
+                </div>
+                <div class="link-item">
+                    <span class="link-label">jsDelivr CDN (Latest)</span>
+                    <a href="https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ko.json"
+                        class="url-display" target="_blank"
+                        rel="noopener noreferrer">https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales/ko.json</a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</body>
+
+</html>

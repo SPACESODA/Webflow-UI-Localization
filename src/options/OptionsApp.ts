@@ -9,6 +9,7 @@ import extKo from '../locales-extension/ko.json'
 // ---------------------------------------------------------------------------
 
 type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean; useCdn: boolean }
+type LocaleMeta = { source: 'primary' | 'secondary' | 'bundled'; fetchedAt?: number }
 
 // ---------------------------------------------------------------------------
 // CONSTANTS & CONFIGURATION
@@ -24,6 +25,8 @@ const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
   { value: 'zh-CN', label: 'Simplified Chinese 简体中文' },
   { value: 'ko', label: 'Korean 한국어' }
 ]
+
+const LOCALE_CACHE_KEY = 'cdnLocaleCache'
 
 // Extension UI translations (used to localize the options page itself)
 const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
@@ -57,6 +60,11 @@ function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStor
   return chrome?.storage?.sync || chrome.storage.local
 }
 
+// Heavier cache reads should come from local when available
+function getCacheStorage(): chrome.storage.LocalStorageArea | chrome.storage.SyncStorageArea {
+  return chrome?.storage?.local || chrome.storage.sync
+}
+
 // Get a localized string for the Options UI (fallback to English)
 function getText(lang: LanguageCode, key: string): string {
   if (lang === 'off') return FALLBACK_STRINGS[key] || ''
@@ -72,8 +80,8 @@ function getText(lang: LanguageCode, key: string): string {
 let lastRenderedLanguage: LanguageCode | null = null
 // Holds the current application state
 let currentSettings: Settings = { ...DEFAULT_SETTINGS }
-// Latest CDN SHA (if fetched by content script)
-let latestCdnSha: string | null = null
+// Latest locale source metadata (per language)
+let latestLocaleMeta: Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null = null
 
 // ---------------------------------------------------------------------------
 // DOM RENDERING
@@ -94,7 +102,7 @@ function renderApp(settings: Settings) {
 
   // Always update input states (checked/disabled) to match settings
   updateValues(root, settings)
-  updateShaBadge(root, latestCdnSha)
+  updateLocaleBadge(root, latestLocaleMeta, settings)
 }
 
 // Render the full options page for the selected language
@@ -109,7 +117,7 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
           <h1 class="title">${getText(lang, 'options_title')}</h1>
           <p class="lede">${getText(lang, 'options_description')}</p>
         </div>
-        <a class="sha_badge" id="cdn_sha_badge" target="_blank" rel="noreferrer noopener"></a>
+        <a class="json_badge" id="cdn_json_badge" target="_blank" rel="noreferrer noopener"></a>
       </div>
     </div>
   `
@@ -211,22 +219,48 @@ function updateValues(root: HTMLElement, settings: Settings) {
   }
 }
 
-function updateShaBadge(root: HTMLElement, sha: string | null) {
-  const el = root.querySelector<HTMLElement>('#cdn_sha_badge')
+function updateLocaleBadge(
+  root: HTMLElement,
+  meta: Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null,
+  settings: Settings
+) {
+  const el = root.querySelector<HTMLElement>('#cdn_json_badge')
   if (!el) return
-  if (sha) {
-    const shortSha = sha.slice(0, 7)
-    el.textContent = `@${shortSha}`
-    el.setAttribute(
-      'href',
-      `https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@${shortSha}/src/locales/`
-    )
-    el.style.display = 'inline-block'
-  } else {
+  const { language, useCdn } = settings
+  const entry = meta?.[language as Exclude<LanguageCode, 'off'>]
+
+  // Hide when language is off
+  if (language === 'off') {
     el.textContent = ''
     el.removeAttribute('href')
     el.style.display = 'none'
+    return
   }
+
+  // If CDN is disabled, force bundled label regardless of cache
+  if (!useCdn) {
+    el.textContent = 'JSON: Bundled'
+    el.removeAttribute('href')
+    el.style.display = 'inline-block'
+    return
+  }
+
+  // Otherwise show the fetched source or fall back to bundled
+  if (!entry) {
+    el.textContent = 'JSON: Bundled'
+    el.removeAttribute('href')
+    el.style.display = 'inline-block'
+    return
+  }
+
+  const label =
+    entry.source === 'primary' ? 'JSON: Cloudflare'
+      : entry.source === 'secondary' ? 'JSON: jsDelivr'
+        : 'JSON: Bundled'
+
+  el.textContent = label
+  el.removeAttribute('href')
+  el.style.display = 'inline-block'
 }
 
 // ---------------------------------------------------------------------------
@@ -296,12 +330,15 @@ function setStatusMsg(root: HTMLElement, msg: string) {
 
 export default function initOptionsPage() {
   const storage = getStorage()
+  const cacheStorage = getCacheStorage()
 
-  // 1. Initial Load: Get settings from storage and render
-  storage.get({ ...DEFAULT_SETTINGS, cdnSha: null }, (items) => {
-    latestCdnSha = (items as any).cdnSha || null
-    const settings = { ...DEFAULT_SETTINGS, ...items }
-    renderApp(settings)
+  // 1. Initial Load: Get settings and cache meta from storage
+  storage.get({ ...DEFAULT_SETTINGS }, (items) => {
+    cacheStorage.get({ [LOCALE_CACHE_KEY]: null }, (cacheItems) => {
+      latestLocaleMeta = extractLocaleMeta((cacheItems as any)[LOCALE_CACHE_KEY])
+      const settings = { ...DEFAULT_SETTINGS, ...items }
+      renderApp(settings)
+    })
   })
 
   // 2. Storage Listener: Handle updates from other tabs/contexts
@@ -320,14 +357,31 @@ export default function initOptionsPage() {
         }
       })
 
-    if (changes.cdnSha && changes.cdnSha.newValue !== latestCdnSha) {
-      latestCdnSha = changes.cdnSha.newValue as string
+    if (changes[LOCALE_CACHE_KEY]) {
+      latestLocaleMeta = extractLocaleMeta(changes[LOCALE_CACHE_KEY].newValue)
       const root = document.getElementById('root')
-      if (root) updateShaBadge(root, latestCdnSha)
+      if (root) updateLocaleBadge(root, latestLocaleMeta, newSettings)
     }
 
     if (hasChange) {
       renderApp(newSettings)
     }
   })
+}
+
+function extractLocaleMeta(
+  cache: Record<Exclude<LanguageCode, 'off'>, { source?: string; fetchedAt?: number }> | null
+): Record<Exclude<LanguageCode, 'off'>, LocaleMeta> | null {
+  if (!cache || typeof cache !== 'object') return null
+  const meta: Partial<Record<Exclude<LanguageCode, 'off'>, LocaleMeta>> = {}
+  Object.entries(cache).forEach(([code, entry]) => {
+    const source = (entry as any)?.source
+    if (source === 'primary' || source === 'secondary') {
+      meta[code as Exclude<LanguageCode, 'off'>] = {
+        source,
+        fetchedAt: (entry as any)?.fetchedAt
+      }
+    }
+  })
+  return Object.keys(meta).length ? (meta as Record<Exclude<LanguageCode, 'off'>, LocaleMeta>) : null
 }
