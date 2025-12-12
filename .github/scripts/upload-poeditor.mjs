@@ -43,18 +43,19 @@ async function uploadLocale(code, filePath) {
   // Validate JSON before upload
   JSON.parse(content);
 
-  const form = new URLSearchParams();
-  form.set('api_token', token);
-  form.set('id', projectId);
-  form.set('language', code);
-  form.set('overwrite', '1'); // add/update, no deletions
-  form.set('sync_terms', '0');
-  form.set('updating', 'terms_translations'); // add terms and translations
-  form.set('data', content);
+  const form = new FormData();
+  form.append('api_token', token);
+  form.append('id', projectId);
+  form.append('language', code);
+  form.append('overwrite', '1'); // add/update only
+  form.append('sync_terms', '0'); // no sync terms (no deletions)
+  form.append('updating', 'terms_translations'); // add terms and translations
+
+  const blob = new Blob([content], { type: 'application/json' });
+  form.append('file', blob, path.basename(filePath));
 
   const response = await fetch('https://api.poeditor.com/v2/projects/upload', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: form
   });
 
