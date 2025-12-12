@@ -14,15 +14,15 @@ If these words are in the middle of a sentence, KEEP them as they are in ENGLISH
 - CSS
 - JS
 - SEO
-- Head
-- Footer
+- Head, e.g., "Head 程式碼"
+- Footer, e.g., "Footer 程式碼"
 - Agency Workspace
 - Agency
 - Freelancer Workspace
 - Freelancer
 - Starter Workspace
 - Starter
-- Libraries
+- Library / Libraries
 - 2FA
 - Adobe
 - Adobe Fonts
@@ -36,3 +36,9 @@ If these words are in the middle of a sentence, KEEP them as they are in ENGLISH
 - Grid
 - Flex
 - Gap
+
+Special rules - Japanese:
+
+- Workspace / workspace / Workspaces / workspaces: ワークスペース
+- Library / Libraries: ライブラリ
+- Ecommerce: EC

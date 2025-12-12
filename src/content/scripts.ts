@@ -752,11 +752,24 @@ function applySettings(settings: Settings) {
   const language = settings.language === 'off' ? currentLanguage : settings.language
 
   // ensure we load dictionary if needed
-  const dictionary =
-    loadedLanguages[language] ??
-    BUNDLED_LANGUAGES[language] ??
-    loadedLanguages[DEFAULT_LANGUAGE] ??
-    BUNDLED_LANGUAGES[DEFAULT_LANGUAGE]
+  let dictionary: Dictionary | undefined
+
+  if (settings.useCdn) {
+    dictionary = loadedLanguages[language] ?? BUNDLED_LANGUAGES[language]
+  } else {
+    dictionary = BUNDLED_LANGUAGES[language]
+  }
+
+  // Fallback to default language if needed
+  if (!dictionary) {
+    if (settings.useCdn) {
+      dictionary = loadedLanguages[DEFAULT_LANGUAGE]
+    }
+    // Final fallback
+    if (!dictionary) {
+      dictionary = BUNDLED_LANGUAGES[DEFAULT_LANGUAGE]
+    }
+  }
 
   currentLanguage = language
   isEnabled = settings.enabled && settings.language !== 'off'

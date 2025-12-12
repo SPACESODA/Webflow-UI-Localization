@@ -3,6 +3,8 @@ import extJa from '../locales-extension/ja.json'
 import extZhTw from '../locales-extension/zh-TW.json'
 import extZhCn from '../locales-extension/zh-CN.json'
 import extKo from '../locales-extension/ko.json'
+import extTh from '../locales-extension/th.json'
+import extFr from '../locales-extension/fr.json'
 
 const RETRY_INTERVAL_MS = 800
 const MAX_RETRIES = 10
@@ -11,7 +13,9 @@ const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
     ja: extJa,
     'zh-TW': extZhTw,
     'zh-CN': extZhCn,
-    ko: extKo
+    ko: extKo,
+    th: extTh,
+    fr: extFr
 }
 
 type SettingsUpdate = { language?: LanguageCode; enabled?: boolean }
@@ -141,6 +145,8 @@ function injectDesignerFooter(
             <option value="zh-TW">繁體中文 (Traditional Chinese)</option>
             <option value="zh-CN">简体中文 (Simplified Chinese)</option>
             <option value="ko">한국어 (Korean)</option>
+            <option value="th">ไทย (Thai)</option>
+            <option value="fr">Français (French)</option>
         </select>
     </div>
     <div class="wul-message">${msg}</div>
