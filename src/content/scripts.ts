@@ -103,9 +103,9 @@ function buildTokenizedReplacement(
   flexible: boolean
 ): Replacement {
   // 1. Build Regex Pattern & Identify Tokens
-  // Split keeps placeholder names because the capturing group is retained
-  // We use this single pass to ensure token names in `tokenNames` 
-  // exactly match the capture groups in the generated regex.
+  // Split keeps placeholder names because the capturing group is retained.
+  // We iterate through the split parts once to populate `tokenNames`
+  // so they exactly match the capture groups in the generated regex.
   const parts = sourceString.split(/\{([^}]+)\}/g)
 
   const toPattern = flexible ? buildFlexiblePattern : escapeRegExp
