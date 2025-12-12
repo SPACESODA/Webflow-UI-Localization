@@ -51,12 +51,13 @@ async function uploadLocale(code, filePath) {
   form.append('sync_terms', '0'); // no sync terms (no deletions)
   form.append('updating', 'terms_translations'); // add terms and translations
 
-  const blob = new Blob([content], { type: 'application/json' });
-  form.append('file', blob, path.basename(filePath));
+  const file = new File([content], path.basename(filePath), { type: 'application/json' });
+  form.append('file', file);
 
   const response = await fetch('https://api.poeditor.com/v2/projects/upload', {
     method: 'POST',
-    body: form
+    body: form,
+    duplex: 'half'
   });
 
   if (!response.ok) {
