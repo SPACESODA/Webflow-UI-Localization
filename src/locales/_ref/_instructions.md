@@ -23,10 +23,9 @@ When editing the locale JSON files:
 About translation:
 
 1. Use terminology consistent with modern web design/development across languages.
-2. Match Webflow's native UI tone. Use neutral, professional, compact, web-industry standard wordings.
-3. Translate with common sense and an awareness of the context and knowledge of modern web design.
-4. Ensure overall consistency in the translations. Review adjacent translations within the same JSON file to understand the big picture and overall nuances.
-5. Make sure the translations are accurate and make sense in context. They should accurately reflect the UI nuances of Webflow with a strong focus on contextual accuracy.
+2. Match Webflow's native UI tone. Use neutral, professional, compact, and contemporary web industry phrasing.
+3. Ensure overall consistency in the translations. Review adjacent translations within the same JSON file to understand the big picture and overall nuances.
+4. Make sure the translations are accurate and make sense. They should accurately reflect the UI nuances of Webflow with a strong focus on contextual accuracy.
 
 Special note for Chinese:
 

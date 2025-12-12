@@ -2,7 +2,7 @@
 
 ## Reporting security issues
 
-If you discover a security or privacy issue, please report it by opening a **GitHub Issue** in this repository.
+If you discover a security or privacy issue, please report it confidentially using GitHub [Security Advisories](https://github.com/SPACESODA/Kumaflow/security/advisories/new).
 
 Please avoid public disclosure until the issue has been reviewed and addressed.
 
