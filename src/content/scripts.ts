@@ -23,7 +23,12 @@ const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
 const DEFAULT_LANGUAGE: Exclude<LanguageCode, 'off'> = 'ja'
 const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, strictMatching: true, useCdn: true }
 const FLEXIBLE_STRICT_WHITESPACE = true
-const initialDocumentLang = document.documentElement?.getAttribute('lang') || 'en'
+/**
+ * Safely retrieves the current document language attribute, defaulting to 'en' if unavailable.
+ */
+function getInitialDocumentLang(): string {
+  return document.documentElement?.getAttribute('lang') || 'en';
+}
 
 const SKIP_TAGS = new Set([
   'SCRIPT',
