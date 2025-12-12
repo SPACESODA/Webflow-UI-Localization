@@ -757,7 +757,6 @@ function applySettings(settings: Settings) {
   reverseExactReplacements = builtReverse.exact
 
   // const activeCount = activeReplacements.length + activeExactReplacements.size
-  // console.log(`[Webflow-Localization] Loaded ${activeCount} replacements (${activeExactReplacements.size} exact, ${activeReplacements.length} complex)`)
   updateDocumentLang(currentLanguage, isEnabled)
 
   // 3. Apply new translations if enabled
