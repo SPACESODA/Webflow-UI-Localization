@@ -50,6 +50,7 @@ async function uploadLocale(code, filePath) {
   form.set('language', code);
   form.set('overwrite', '1'); // add/update, no deletions
   form.set('sync_terms', '0');
+  form.set('updating', 'terms_translations'); // add terms and translations
   form.set('type', exportType);
   form.append('file', new Blob([content], { type: 'application/json' }), path.basename(filePath));
 
