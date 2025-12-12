@@ -379,5 +379,8 @@
   "Nothing to undo": "되돌릴 작업이 없습니다",
   "Nothing to redo": "다시 실행할 작업이 없습니다",
   "Style elements and build layouts": "요소 스타일을 지정하고 레이아웃을 구성하세요",
-  "Build pages with components and edit content": "컴포넌트로 페이지를 만들고 콘텐츠를 편집하세요"
+  "Build pages with components and edit content": "컴포넌트로 페이지를 만들고 콘텐츠를 편집하세요",
+  "Styles (S)": "",
+  "Unable to connect": "",
+  "Comments (C)": ""
 }

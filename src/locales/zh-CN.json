@@ -379,5 +379,8 @@
   "Nothing to undo": "没有可撤销的操作",
   "Nothing to redo": "没有可重做的操作",
   "Style elements and build layouts": "为元素设置样式并构建布局",
-  "Build pages with components and edit content": "使用组件构建页面并编辑内容"
+  "Build pages with components and edit content": "使用组件构建页面并编辑内容",
+  "Styles (S)": "",
+  "Unable to connect": "",
+  "Comments (C)": ""
 }

@@ -379,5 +379,8 @@
   "Nothing to undo": "元に戻す操作はありません",
   "Nothing to redo": "やり直す操作はありません",
   "Style elements and build layouts": "要素のスタイルを設定し、レイアウトを構築",
-  "Build pages with components and edit content": "コンポーネントでページを構築し、コンテンツを編集"
+  "Build pages with components and edit content": "コンポーネントでページを構築し、コンテンツを編集",
+  "Styles (S)": "",
+  "Unable to connect": "",
+  "Comments (C)": ""
 }

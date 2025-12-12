@@ -379,5 +379,8 @@
   "Nothing to undo": "沒有可復原的動作",
   "Nothing to redo": "沒有可重做的動作",
   "Style elements and build layouts": "設定元素樣式並建立版面配置",
-  "Build pages with components and edit content": "使用元件建立頁面並編輯內容"
+  "Build pages with components and edit content": "使用元件建立頁面並編輯內容",
+  "Styles (S)": "",
+  "Unable to connect": "",
+  "Comments (C)": ""
 }
