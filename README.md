@@ -46,7 +46,7 @@ Latest locale JSON files via Cloudflare Pages / jsDelivr:
 <br />
 <br />
 
-Made with &hearts; by [Anthony C.](https://x.com/anthonycxc)
+Made with ♥ by [Anthony C.](https://x.com/anthonycxc)
 
 ---
 This extension provides unofficial translations that may not be accurate.
