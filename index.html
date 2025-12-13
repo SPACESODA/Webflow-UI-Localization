@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Kumaflow - Webflow UI Localization</title>
+    <style>
+        /* Reset and Base */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #EECF34; /* Brand Yellow */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Layout */
+        .main-content {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+
+        /* Visual Elements */
+        .kuma {
+            width: 600px;
+            max-width: 85vw;
+            height: auto;
+            animation: float 6s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .logo {
+            width: 600px;
+            max-width: 90vw;
+            height: auto;
+            margin-top: -190px;
+            z-index: 2;
+            animation: popIn 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .subtitle {
+            margin-top: 10px;
+            color: #FFFFFF;
+            font-size: 1.5rem;
+            font-weight: 600;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            letter-spacing: 0.5px;
+            z-index: 2;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.5s forwards;
+        }
+
+        /* Intro & Actions */
+        .content {
+            margin-top: 30px;
+            z-index: 2;
+            opacity: 0;
+            animation: fadeIn 1s ease-out 0.8s forwards;
+            max-width: 720px;
+        }
+
+        .intro {
+            font-size: 1.25rem;
+            color: #333;
+            line-height: 1.5;
+            margin-bottom: 30px;
+            font-weight: 500;
+        }
+
+        .btn-install {
+            display: inline-block;
+            background-color: #000;
+            color: #fff;
+            padding: 16px 32px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            text-decoration: none;
+            border-radius: 50px;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            margin-bottom: 24px;
+        }
+
+        .btn-install:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
+        }
+
+        .secondary-actions {
+            font-size: 1rem;
+            font-weight: 500;
+        }
+
+        .secondary-actions a {
+            color: rgba(0,0,0,0.7);
+            text-decoration: none;
+            margin: 0 10px;
+            transition: color 0.2s;
+        }
+
+        .secondary-actions a:hover {
+            color: #000;
+            text-decoration: underline;
+        }
+
+        /* Footer */
+        .footer {
+            padding: 30px 20px;
+            text-align: center;
+            font-size: 0.85rem;
+            color: rgba(0,0,0,0.6);
+            background: linear-gradient(to top, rgba(238, 207, 52, 1) 0%, rgba(238, 207, 52, 0) 100%);
+        }
+
+        .footer p {
+            margin: 6px 0;
+        }
+
+        .footer a {
+            color: inherit;
+            text-decoration: underline;
+            text-decoration-thickness: 1px;
+            text-underline-offset: 2px;
+        }
+
+        .footer a:hover {
+            color: #000;
+        }
+
+        .disclaimer-group {
+            margin-top: 30px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .disclaimer {
+            font-size: 0.75rem;
+            opacity: 0.7;
+            margin: 4px 0;
+        }
+
+        /* Animations */
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-15px); }
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 600px) {
+            .kuma { width: 300px; }
+            .logo { width: 90vw; margin-top: -100px; }
+            .subtitle { font-size: 1.2rem; }
+            .intro { font-size: 1.1rem; padding: 0 20px; }
+            .secondary-actions { display: flex; flex-direction: column; gap: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Visuals -->
+            <img src="./assets/kuma-keyart.avif" alt="Kumaflow Kuma" class="kuma">
+            <img src="./assets/KUMAFLOW.avif" alt="KUMAFLOW" class="logo">
+            <div class="subtitle">Webflow UI Localization</div>
+
+            <!-- Content Area -->
+            <div class="content">
+                <p class="intro">
+                    Experience the Webflow Designer in your native language.<br>
+                    Includes community translations for Japanese, Traditional & Simplified Chinese, Korean, French and Thai.
+                </p>
+                
+                <a href="https://github.com/SPACESODA/Webflow-UI-Localization" target="_blank" rel="noreferrer noopener" class="btn-install">
+                    Install Extension
+                </a>
+
+                <div class="secondary-actions">
+                    <a href="https://poeditor.com/join/project/7drFUDh3dh" target="_blank" rel="noreferrer noopener">Join translations, Kuma wants you!</a>
+                    <a href="https://github.com/SPACESODA/Webflow-UI-Localization" target="_blank" rel="noreferrer noopener">Star on GitHub</a>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>
+            Made with &hearts; by <a href="https://x.com/anthonycxc" target="_blank" rel="noreferrer noopener">Anthony C.</a>
+        </p>
+        
+        <div class="disclaimer-group">
+            <p class="disclaimer">This extension provides unofficial translations that may not be accurate.</p>
+            <p class="disclaimer">This extension is an independent project and is not affiliated with or endorsed by Webflow. Webflow is a trademark of Webflow, Inc.</p>
+            <p class="disclaimer">This extension does not collect, store, or transmit any personal information or usage data.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
