@@ -149,7 +149,13 @@ function renderFullPage(root: HTMLElement, settings: Settings) {
   root.querySelector('.options_shell')?.appendChild(container)
 
   // Enable toggle
-  renderToggleItem(container, 'enabled', getText(lang, 'options_enable_label'), getText(lang, 'options_enable_desc'))
+  const localizedLabel = getText(lang, 'options_enable_label')
+  const englishLabel = FALLBACK_STRINGS['options_enable_label']
+  const displayLabel = localizedLabel === englishLabel
+    ? localizedLabel
+    : `${localizedLabel} (${englishLabel})`
+
+  renderToggleItem(container, 'enabled', displayLabel, getText(lang, 'options_enable_desc'))
 
   // Status Message
   const status = document.createElement('p')
