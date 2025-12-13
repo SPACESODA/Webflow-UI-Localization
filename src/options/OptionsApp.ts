@@ -1,4 +1,13 @@
+// ---------------------------------------------------------------------------
+// OPTIONS PAGE APPLICATION
+// ---------------------------------------------------------------------------
+// This file handles the rendering and logic for the extension's options page.
+// It manages user settings and provides manual controls for clearing cache.
+
 import type { LanguageCode, Dictionary } from '../types'
+import { LOCALE_CACHE_KEY } from '../constants'
+
+// Extension UI Translations
 import extJa from '../locales-extension/ja.json'
 import extZhTw from '../locales-extension/zh-TW.json'
 import extZhCn from '../locales-extension/zh-CN.json'
@@ -29,9 +38,6 @@ const LANGUAGES: Array<{ value: LanguageCode; label: string }> = [
   { value: 'th', label: 'Thai ไทย' },
   { value: 'fr', label: 'French Français' }
 ]
-
-import { LOCALE_CACHE_KEY } from '../constants'
-// const LOCALE_CACHE_KEY = 'cdnLocaleCache'
 
 // Extension UI translations (used to localize the options page itself)
 const EXTENSION_LOCALES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
@@ -347,10 +353,9 @@ function bindEvents(root: HTMLElement) {
     chrome.storage.local.remove(LOCALE_CACHE_KEY, () => {
       // 2. Set Done Text on completion
       // We keep isManuallyRefreshing = true so onChanged doesn't overwrite this with "Bundled"
-      el.textContent = getText(currentSettings.language, 'options_refresh_done_msg')
-      // NOTE: We do NOT set isManuallyRefreshing back to false here. 
       // It stays true so this message persists until the user reloads the Page
       // or until a NEW cache entry appears (which happens when they visit Webflow).
+      el.textContent = getText(currentSettings.language, 'options_refresh_done_msg')
     })
   })
 }
@@ -382,6 +387,7 @@ export default function initOptionsPage() {
   storage.get({ ...DEFAULT_SETTINGS }, (items) => {
     cacheStorage.get({ [LOCALE_CACHE_KEY]: null }, (cacheItems) => {
       latestLocaleMeta = extractLocaleMeta((cacheItems as any)[LOCALE_CACHE_KEY])
+      // Merge defaults with loaded items to ensure complete object
       const settings = { ...DEFAULT_SETTINGS, ...items }
       renderApp(settings)
     })
@@ -394,20 +400,31 @@ export default function initOptionsPage() {
     const newSettings = { ...currentSettings }
     let hasChange = false
 
-      // Update settings object with any changed values
-      ; (Object.keys(DEFAULT_SETTINGS) as Array<keyof Settings>).forEach(key => {
-        if (changes[key]) {
-          // @ts-ignore
-          newSettings[key] = changes[key].newValue
-          hasChange = true
-        }
-      })
+    // Update settings object with any changed values
+    // We use explicit checks instead of iteration for type safety (avoid TS2322)
+    if (changes.language) {
+      newSettings.language = changes.language.newValue
+      hasChange = true
+    }
+    if (changes.enabled) {
+      newSettings.enabled = changes.enabled.newValue
+      hasChange = true
+    }
+    if (changes.strictMatching) {
+      newSettings.strictMatching = changes.strictMatching.newValue
+      hasChange = true
+    }
+    if (changes.useCdn) {
+      newSettings.useCdn = changes.useCdn.newValue
+      hasChange = true
+    }
 
+    // Check for cache updates (fetched by content scripts)
     if (changes[LOCALE_CACHE_KEY]) {
       const newValue = changes[LOCALE_CACHE_KEY].newValue
       latestLocaleMeta = extractLocaleMeta(newValue)
 
-      // If we receive a NEW valid cache (fetched by content script), we can clear the manual refresh state
+      // If we receive a NEW valid cache, we can clear the manual refresh state
       // and show the new source (e.g. Cloudflare).
       if (newValue && Object.keys(newValue).length > 0) {
         isManuallyRefreshing = false

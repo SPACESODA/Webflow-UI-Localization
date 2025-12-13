@@ -3,10 +3,11 @@ name: Pull locales from POEditor
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */12 * * *'
+    - cron: "0 */12 * * *"
 
 permissions:
   contents: write
+  pull-requests: write
 
 jobs:
   pull-locales:
@@ -39,34 +40,25 @@ jobs:
       - name: Verify locales
         run: npm run verify-locales
 
-      - name: Commit changes
-        id: commit
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          
-          # Only stage the locale files we care about
-          git add src/locales/*.json
-          
-          # Check if there are actually changes STAGED for commit
-          if ! git diff --staged --quiet; then
-            git commit -m "chore: pull locales from POEditor"
-            echo "changes=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "No locale changes to commit."
-            echo "changes=false" >> "$GITHUB_OUTPUT"
-          fi
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          commit-message: "chore: pull locales from POEditor"
+          branch: "locales/update-from-poeditor"
+          delete-branch: true
+          title: "chore: update locales from POEditor"
+          body: |
+            Automated update of locale files from POEditor.
 
-      - name: Push changes
-        if: steps.commit.outputs.changes == 'true'
-        run: git push
+            This PR matches the contents of the localization files with the latest export from POEditor.
+          labels: |
+            automated pr
+            localization
 
-      - name: Purge jsDelivr cache
-        if: steps.commit.outputs.changes == 'true'
-        run: |
-          for file in src/locales/*.json; do
-            filename=$(basename "$file")
-            url="https://purge.jsdelivr.net/gh/${GITHUB_REPOSITORY}@${GITHUB_REF_NAME}/src/locales/${filename}"
-            echo "Purging $url"
-            curl -fsS "$url" || echo "Failed to purge $url"
-          done
+      - name: Enable Pull Request Automerge
+        if: steps.cpr.outputs.pull-request-operation == 'created'
+        run: gh pr merge --merge --auto "${{ steps.cpr.outputs.pull-request-number }}"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,3 +1,12 @@
+// ---------------------------------------------------------------------------
+// CONTENT SCRIPT
+// ---------------------------------------------------------------------------
+// This script runs on the Webflow Designer/Dashboard. It handles:
+// 1. Observing DOM changes.
+// 2. Applying translations to text nodes and attributes.
+// 3. Managing the "Use latest translations" preference (CDN vs Bundled).
+// 4. Caching and fallback logic for translation files.
+
 import ja from '../locales/ja.json'
 import zhTw from '../locales/zh-TW.json'
 import zhCn from '../locales/zh-CN.json'
@@ -6,6 +15,12 @@ import th from '../locales/th.json'
 import fr from '../locales/fr.json'
 import { injectDashboardFooter } from './injections'
 import type { LanguageCode, Dictionary } from '../types'
+import { LOCALE_CACHE_KEY } from '../constants'
+import { EXCLUDED_SELECTORS } from './exclusion-selectors'
+
+// ---------------------------------------------------------------------------
+// TYPES
+// ---------------------------------------------------------------------------
 
 type Replacement = {
   regex: RegExp
@@ -14,6 +29,10 @@ type Replacement = {
 }
 
 type Settings = { language: LanguageCode; enabled: boolean; strictMatching: boolean; useCdn: boolean }
+
+// ---------------------------------------------------------------------------
+// CONSTANTS
+// ---------------------------------------------------------------------------
 
 const BUNDLED_LANGUAGES: Record<Exclude<LanguageCode, 'off'>, Dictionary> = {
   ja,
@@ -29,6 +48,7 @@ const DEFAULT_SETTINGS: Settings = { language: DEFAULT_LANGUAGE, enabled: true, 
 const FLEXIBLE_STRICT_WHITESPACE = true
 const initialDocumentLang = document.documentElement?.getAttribute('lang') || 'en'
 
+// Elements we should never translate
 const SKIP_TAGS = new Set([
   'SCRIPT',
   'STYLE',
@@ -41,35 +61,45 @@ const SKIP_TAGS = new Set([
   'OPTION'
 ])
 
-import { EXCLUDED_SELECTORS } from './exclusion-selectors'
-
 const IGNORE_PATTERN = EXCLUDED_SELECTORS.join(',')
 
+const LOCALE_PRIMARY_BASE = 'https://webflow-ui-localization.pages.dev/src/locales'
+const LOCALE_SECONDARY_BASE =
+  'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales'
+const LOCALE_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
+
+type CachedLocaleEntry = { dictionary: Dictionary; fetchedAt: number; source: 'primary' | 'secondary' }
+
+// ---------------------------------------------------------------------------
+// STATE
+// ---------------------------------------------------------------------------
 
 let activeReplacements: Replacement[] = []
 let activeExactReplacements: Map<string, string> = new Map()
 let reverseReplacements: Replacement[] = []
 let reverseExactReplacements: Map<string, string> = new Map()
+
 let currentLanguage: Exclude<LanguageCode, 'off'> = DEFAULT_LANGUAGE
 let isEnabled = true
 let strictMatching = true
 let latestSettings: Settings = DEFAULT_SETTINGS
+
+// Loaded languages map (starts with bundled, may be updated via CDN)
 let loadedLanguages: Record<Exclude<LanguageCode, 'off'>, Dictionary> = { ...BUNDLED_LANGUAGES }
+let localeCache: Record<Exclude<LanguageCode, 'off'>, CachedLocaleEntry> = {} as any
+let cacheLoaded = false
+
+// Observers and Schedule
 let observer: MutationObserver | null = null
+let titleObserver: MutationObserver | null = null
 let flushScheduled = false
 
 const pendingTextNodes = new Set<Text>()
 const pendingElements = new Set<Element>()
-const LOCALE_PRIMARY_BASE = 'https://webflow-ui-localization.pages.dev/src/locales'
-const LOCALE_SECONDARY_BASE =
-  'https://cdn.jsdelivr.net/gh/SPACESODA/Webflow-UI-Localization@latest/src/locales'
-const LOCALE_CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours
-import { LOCALE_CACHE_KEY } from '../constants'
-// const LOCALE_CACHE_KEY = 'cdnLocaleCache_v1'
-type CachedLocaleEntry = { dictionary: Dictionary; fetchedAt: number; source: 'primary' | 'secondary' }
-let localeCache: Record<Exclude<LanguageCode, 'off'>, CachedLocaleEntry> = {} as any
-let cacheLoaded = false
 
+// ---------------------------------------------------------------------------
+// UTILS & FILTERS
+// ---------------------------------------------------------------------------
 
 function isDevtoolsNode(node: Node): boolean {
   if (!(node instanceof Element)) return false
@@ -109,6 +139,10 @@ function findBestMarker(source: string): string | undefined {
   if (matches[0] && matches[0].length >= 2) return matches[0]
   return undefined
 }
+
+// ---------------------------------------------------------------------------
+// REPLACEMENT BUILDER
+// ---------------------------------------------------------------------------
 
 function buildTokenizedReplacement(
   sourceString: string,
@@ -260,6 +294,10 @@ function maybeContains(text: string, marker?: string) {
   return text.includes(marker)
 }
 
+// ---------------------------------------------------------------------------
+// DOM MANIPULATION (Translate/Revert)
+// ---------------------------------------------------------------------------
+
 function applyReplacements(
   text: string,
   replacements: Replacement[],
@@ -316,18 +354,13 @@ function translateTextNode(node: Text) {
 }
 
 function revertTextNode(node: Text) {
-  // We removed the isEnabled check here because applySettings calls this
-  // specifically to clear existing translations *while* isEnabled is still true
-  // (before switching to the new language).
+  // applySettings calls this to clear existing translations *while* isEnabled is still true.
   // The caller is responsible for deciding when to revert.
-
   const { updated, changed } = applyReplacements(node.data, reverseReplacements, reverseExactReplacements)
   if (changed) {
     node.data = updated
   }
 }
-
-let titleObserver: MutationObserver | null = null
 
 function translateTitle() {
   if (!isEnabled) return
@@ -341,7 +374,6 @@ function translateTitle() {
 }
 
 function revertTitle() {
-  // Removed isEnabled check for same reason as revertTextNode
   const current = document.title
   const { updated, changed } = applyReplacements(current, reverseReplacements, reverseExactReplacements)
   if (changed) {
@@ -350,7 +382,6 @@ function revertTitle() {
 }
 
 const handleTitleMutations: MutationCallback = () => {
-  // When title changes (by app or by us)
   // Logic: if the app overwrites our title with English, we re-apply translation.
   // The infinite loop is prevented by checking if translation is actually needed
   // inside translateTitle (via applyReplacements check).
@@ -462,17 +493,18 @@ function revertPlaceholdersWithin(root: Node) {
   }
 }
 
+// ---------------------------------------------------------------------------
+// SCHEDULING & BATCHING
+// ---------------------------------------------------------------------------
+
 function flushPending() {
   flushScheduled = false
   if (!document.body) return
 
   // Suspend observers to prevent infinite loops and performance issues.
-  // This is critical: modifying the DOM while observing it would trigger
-  // immediate recursion, freezing the browser.
+  // Modifying the DOM while observing it would trigger immediate recursion.
   if (observer) observer.disconnect()
   if (titleObserver) titleObserver.disconnect()
-
-
 
   const textNodes = Array.from(pendingTextNodes)
   const elements = Array.from(pendingElements)
@@ -498,8 +530,6 @@ function flushPending() {
     applySettings({ ...latestSettings, ...updates })
   })
 
-
-
   // Resume observers
   if (isEnabled) {
     observeDocument()
@@ -512,7 +542,6 @@ function flushPending() {
     scheduleFlush()
   }
 }
-
 
 
 function scheduleFlush() {
@@ -584,6 +613,10 @@ function disconnectObserver() {
   pendingElements.clear()
 }
 
+// ---------------------------------------------------------------------------
+// STORAGE & SETTINGS
+// ---------------------------------------------------------------------------
+
 function getStorage(): chrome.storage.SyncStorageArea | chrome.storage.LocalStorageArea {
   if (chrome?.storage?.sync) return chrome.storage.sync
   return chrome.storage.local
@@ -617,6 +650,10 @@ function updateDocumentLang(language: LanguageCode, enabled: boolean) {
   const langToSet = enabled && language !== 'off' ? language : initialDocumentLang
   document.documentElement?.setAttribute('lang', langToSet)
 }
+
+// ---------------------------------------------------------------------------
+// FETCHING & CACHING
+// ---------------------------------------------------------------------------
 
 function buildLocaleUrls(code: Exclude<LanguageCode, 'off'>): Array<{ url: string; source: 'primary' | 'secondary' }> {
   return [
@@ -736,6 +773,10 @@ async function refreshLocalesFromCdn() {
   }
 }
 
+// ---------------------------------------------------------------------------
+// MAIN CONTROLLER
+// ---------------------------------------------------------------------------
+
 function applySettings(settings: Settings) {
   // 1. Revert existing translations if currently enabled.
   // Ensures a clean slate (English) before applying new language or disqualifying.
@@ -751,21 +792,25 @@ function applySettings(settings: Settings) {
   latestSettings = settings
   const language = settings.language === 'off' ? currentLanguage : settings.language
 
-  // ensure we load dictionary if needed
+  // 3. Determine which dictionary to use
   let dictionary: Dictionary | undefined
 
   if (settings.useCdn) {
+    // If CDN is enabled, prefer the loaded (external/cached) dictionary, fallback to bundle.
     dictionary = loadedLanguages[language] ?? BUNDLED_LANGUAGES[language]
   } else {
+    // If CDN is disabled, strictly use the bundled dictionary.
     dictionary = BUNDLED_LANGUAGES[language]
   }
 
   // Fallback to default language if needed
   if (!dictionary) {
+    // If CDN was enabled but the specific language wasn't found in loadedLanguages
+    // (e.g., failed to fetch), try the default language from loadedLanguages.
     if (settings.useCdn) {
       dictionary = loadedLanguages[DEFAULT_LANGUAGE]
     }
-    // Final fallback
+    // Final fallback: use the bundled default language.
     if (!dictionary) {
       dictionary = BUNDLED_LANGUAGES[DEFAULT_LANGUAGE]
     }
@@ -775,6 +820,7 @@ function applySettings(settings: Settings) {
   isEnabled = settings.enabled && settings.language !== 'off'
   strictMatching = settings.strictMatching
 
+  // Build the replacement maps (Exact vs Regex)
   const built = buildReplacements(dictionary, strictMatching)
   activeReplacements = built.complex
   activeExactReplacements = built.exact
@@ -783,11 +829,9 @@ function applySettings(settings: Settings) {
   reverseReplacements = builtReverse.complex
   reverseExactReplacements = builtReverse.exact
 
-  // const activeCount = activeReplacements.length + activeExactReplacements.size
-  // console.log(`[Webflow-Localization] Loaded ${activeCount} replacements (${activeExactReplacements.size} exact, ${activeReplacements.length} complex)`)
   updateDocumentLang(currentLanguage, isEnabled)
 
-  // 3. Apply new translations if enabled
+  // 4. Apply new translations if enabled
   if (isEnabled) {
     translateWithin(document.body)
     translatePlaceholdersWithin(document.body)
@@ -809,7 +853,8 @@ function listenForSettingsChanges() {
     if (
       !changes.language &&
       typeof changes.enabled === 'undefined' &&
-      typeof changes.strictMatching === 'undefined'
+      typeof changes.strictMatching === 'undefined' &&
+      typeof changes.useCdn === 'undefined'
     )
       return
 
