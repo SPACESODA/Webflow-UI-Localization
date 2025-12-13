@@ -545,5 +545,9 @@
   "Edit component": "컴포넌트 편집",
   "Menu": "메뉴",
   "Properties": "속성",
-  "Reset all properties": "모든 속성 초기화"
+  "Reset all properties": "모든 속성 초기화",
+  "Version": "",
+  "Interactions": "",
+  "Search index settings": "",
+  "For in-page linking": ""
 }

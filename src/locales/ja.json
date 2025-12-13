@@ -545,5 +545,9 @@
   "Edit component": "コンポーネントを編集",
   "Menu": "メニュー",
   "Properties": "プロパティ",
-  "Reset all properties": "すべてのプロパティをリセット"
+  "Reset all properties": "すべてのプロパティをリセット",
+  "Version": "",
+  "Interactions": "",
+  "Search index settings": "",
+  "For in-page linking": ""
 }
